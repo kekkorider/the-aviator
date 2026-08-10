@@ -17,6 +17,8 @@ import {
 // import type { RigidBodySettings } from 'crashcat'
 
 import { PlanetMaterial } from './materials/planet'
+import { PlaneMaterial } from './materials/plane'
+import { PropellerMaterial } from './materials/propeller'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
 import { OrbitControlsModule } from './modules/OrbitControls'
@@ -40,7 +42,9 @@ starter.addModules({
   input: new InputModule(),
 })
 
-const { scene, camera, scenePass, renderPipeline } = starter.ctx
+const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
+
+renderer.setClearColor(0xe4e0ba)
 
 starter.start()
 starter.ctx.once(ThreeContextEvents.Mount, () => {
@@ -48,6 +52,8 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
 })
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
+
+await modules.assetLoader.loadModels('game.glb')
 
 //
 // Camera
@@ -57,7 +63,7 @@ camera.position.z = 5
 //
 // Planet
 //
-const planetGeometry = new THREE.IcosahedronGeometry(5, 6)
+const planetGeometry = new THREE.IcosahedronGeometry(5, 9)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.position.set(0, -6, 0)
 addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
@@ -66,11 +72,14 @@ scene.add(planet)
 //
 // Plane
 //
-const plane = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshNormalNodeMaterial()
-)
+const plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
+plane.material = PlaneMaterial
 addComponent(plane, PlaneControl)
+
+const propeller = plane.getObjectByName('Propeller') as THREE.Mesh
+propeller.material = PropellerMaterial
+addComponent(propeller, Spin, { axis: 'x', speed: 20 })
+
 scene.add(plane)
 
 //

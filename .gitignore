@@ -28,3 +28,5 @@ public/draco/*
 
 public/basis/*
 !public/basis/.gitkeep
+
+*.blend1
