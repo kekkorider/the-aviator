@@ -35,7 +35,7 @@ PlanetMaterial.colorNode = Fn(() => {
 
   const positionRatio = length(positionLocal).div(positionOriginal)
   // @ts-ignore
-  positionRatio.smoothstepAssign(0.95, 1.05)
+  positionRatio.smoothstepAssign(0.98, 1.05)
 
   return mix(colorDeep, colorShallow, positionRatio)
 })()

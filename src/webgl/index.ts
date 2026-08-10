@@ -24,9 +24,8 @@ import { PhysicsModule } from './modules/Physics'
 import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
 
-import {
-  Spin
-} from './behaviors/Spin'
+import { Spin } from './behaviors/Spin'
+import { PlaneControl } from './behaviors/PlaneControl'
 
 //
 // Setup
@@ -41,7 +40,7 @@ starter.addModules({
   input: new InputModule(),
 })
 
-const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
+const { scene, camera, scenePass, renderPipeline } = starter.ctx
 
 starter.start()
 starter.ctx.once(ThreeContextEvents.Mount, () => {
@@ -49,14 +48,6 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
 })
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
-
-await renderer.init()
-
-modules.assetLoader.createKTX2Loader()
-
-await modules.assetLoader.loadTextures('/diamond-07.png')
-await modules.assetLoader.loadModels('/suzanne.glb')
-await modules.assetLoader.loadKTX('/2d_etc1s.ktx2')
 
 //
 // Camera
@@ -71,6 +62,16 @@ const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.position.set(0, -6, 0)
 addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
 scene.add(planet)
+
+//
+// Plane
+//
+const plane = new THREE.Mesh(
+  new THREE.BoxGeometry(1, 1, 1),
+  new THREE.MeshNormalNodeMaterial()
+)
+addComponent(plane, PlaneControl)
+scene.add(plane)
 
 //
 // Post-processing and Inspector
