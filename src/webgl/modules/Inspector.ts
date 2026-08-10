@@ -3,7 +3,7 @@ import { Inspector } from 'three/addons/inspector/Inspector.js'
 
 import type { ParametersGroup } from "three/examples/jsm/inspector/tabs/Parameters.js"
 
-import { scale } from '../materials/scale'
+import { seaSpeed, seaHeight, colorShallow, colorDeep } from '../materials/planet'
 
 export class InspectorModule extends ContextModule {
   inspector: Inspector | null = null
@@ -13,6 +13,9 @@ export class InspectorModule extends ContextModule {
     this.inspector = this.ctx.renderer.inspector = new Inspector()
 
     this.gui = this.inspector.createParameters('Settings')
-    this.gui.add(scale, 'value', 0.25, 1.5).name('Scale')
+    this.gui.add(seaSpeed, 'value', 0, 1).name('Sea Speed')
+    this.gui.add(seaHeight, 'value', 0, 1).name('Sea Height')
+    this.gui.addColor(colorShallow, 'value').name('Color Shallow')
+    this.gui.addColor(colorDeep, 'value').name('Color Deep')
   }
 }
