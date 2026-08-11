@@ -58,12 +58,12 @@ export class PlaneControl extends Object3DBehaviour {
 
     const targetY = gsap.utils.pipe(
       gsap.utils.clamp(-0.5, 0.5),
-      gsap.utils.mapRange(-0.5, 0.5, -0.5, 1.1)
+      gsap.utils.mapRange(-0.5, 0.5, -0.5, 1.7)
     )
 
     const targetX = gsap.utils.pipe(
       gsap.utils.clamp(-0.5, 0.5),
-      gsap.utils.mapRange(-0.5, 0.5, -1.2, 1.2)
+      gsap.utils.mapRange(-0.5, 0.5, -2.5, 2.5)
     )
 
     this.observer = Observer.create({

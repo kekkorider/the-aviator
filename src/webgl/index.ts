@@ -12,9 +12,7 @@ import {
   ThreeStart,
   addComponent
 } from "three-start"
-// import { MotionType } from 'crashcat'
-
-// import type { RigidBodySettings } from 'crashcat'
+import { MotionType } from 'crashcat'
 
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
@@ -29,6 +27,10 @@ import { InputModule } from './modules/Input'
 import { Spin } from './behaviors/Spin'
 import { PlaneControl } from './behaviors/PlaneControl'
 
+import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
+
+import type { RigidBodySettings } from 'crashcat'
+
 //
 // Setup
 //
@@ -37,19 +39,22 @@ const starter = new ThreeStart()
 starter.addModules({
   assetLoader: new AssetLoaderModule(),
   orbitControls: new OrbitControlsModule(),
-  physics: new PhysicsModule(false),
+  physics: new PhysicsModule(true),
   inspector: new InspectorModule(),
   input: new InputModule(),
 })
 
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
 
+let plane: THREE.Mesh | undefined = undefined
+
 renderer.setClearColor(0xe4e0ba)
 
-starter.start()
 starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
 })
+
+starter.start()
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
 
@@ -63,7 +68,7 @@ camera.position.z = 5
 //
 // Planet
 //
-const planetGeometry = new THREE.IcosahedronGeometry(5, 9)
+const planetGeometry = new THREE.IcosahedronGeometry(5, 10)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.position.set(0, -6, 0)
 addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
@@ -72,8 +77,19 @@ scene.add(planet)
 //
 // Plane
 //
-const plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
+plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
 plane.material = PlaneMaterial
+
+const planeBody = new THREE.Object3D()
+planeBody.name = 'PlaneBody'
+plane.add(planeBody)
+
+addComponent(planeBody, BodySphere, {
+  motionType: MotionType.STATIC,
+} as RigidBodySettings, {
+  radius: 0.5
+} as SphereBodyParams)
+
 addComponent(plane, PlaneControl)
 
 const propeller = plane.getObjectByName('Propeller') as THREE.Mesh

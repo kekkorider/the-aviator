@@ -31,14 +31,11 @@ export class BodySphere extends Body {
 
   override createShape(): void {
     const { geometry } = this.object as THREE.Mesh
-    const parameters = (geometry as THREE.SphereGeometry).parameters as GeometryParams
 
+    // @ts-ignore
+    const parameters = (geometry as THREE.BufferGeometry)?.parameters as GeometryParams
 
-    if (this.bodyParams) {
-      parameters.radius = this.bodyParams.radius
-    }
-
-    const { radius } = parameters
+    const radius = this.bodyParams?.radius ?? parameters.radius
 
     this.shape = sphere.create({ radius: radius + this.bodyBias })
   }

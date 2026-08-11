@@ -1,3 +1,4 @@
+import { Vector3, Quaternion } from 'three/webgpu'
 import { Object3DBehaviour } from 'three-start'
 import { MotionType, rigidBody } from 'crashcat'
 
@@ -14,6 +15,8 @@ export class Body extends Object3DBehaviour {
   body: RigidBody | null = null
   bodyBias: number = 0.01
   shape: Shape | null = null
+  objectWorldPosition: Vector3 = new Vector3()
+  objectWorldQuaternion: Quaternion = new Quaternion()
 
   settings: RigidBodySettings | null = null
 
@@ -40,20 +43,32 @@ export class Body extends Object3DBehaviour {
   }
 
   onUpdate() {
-    if (this.motionType === MotionType.STATIC) return
+    if (this.motionType === MotionType.STATIC) {
+      const worldPosition = this.object.getWorldPosition(this.objectWorldPosition)
+      const worldQuaternion = this.object.getWorldQuaternion(this.objectWorldQuaternion)
 
-    this.object.position.set(
-      this.body!.position[0],
-      this.body!.position[1],
-      this.body!.position[2],
-    )
+      this.body!.position[0] = worldPosition.x
+      this.body!.position[1] = worldPosition.y
+      this.body!.position[2] = worldPosition.z
 
-    this.object.quaternion.set(
-      this.body!.quaternion[0],
-      this.body!.quaternion[1],
-      this.body!.quaternion[2],
-      this.body!.quaternion[3],
-    )
+      this.body!.quaternion[0] = worldQuaternion.x
+      this.body!.quaternion[1] = worldQuaternion.y
+      this.body!.quaternion[2] = worldQuaternion.z
+      this.body!.quaternion[3] = worldQuaternion.w
+    } else {
+      this.object.position.set(
+        this.body!.position[0],
+        this.body!.position[1],
+        this.body!.position[2],
+      )
+
+      this.object.quaternion.set(
+        this.body!.quaternion[0],
+        this.body!.quaternion[1],
+        this.body!.quaternion[2],
+        this.body!.quaternion[3],
+      )
+    }
   }
 
   createBody() {

@@ -12,8 +12,8 @@ import {
 import { MeshBasicNodeMaterial, Color } from 'three/webgpu'
 
 export const seaSpeed = uniform(0.5)
-export const seaHeight = uniform(0.32)
-export const colorShallow = uniform(new Color(0.05, 0.3, 0.85))
+export const seaHeight = uniform(0.55)
+export const colorShallow = uniform(new Color(0.223, 0.904, 0.918))
 export const colorDeep = uniform(new Color(0.05, 0.1, 0.35))
 
 export const PlanetMaterial = new MeshBasicNodeMaterial({
