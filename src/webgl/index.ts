@@ -10,7 +10,8 @@ import {
 import {
   ThreeContextEvents,
   ThreeStart,
-  addComponent
+  addComponent,
+  getComponent
 } from "three-start"
 import { MotionType } from 'crashcat'
 
@@ -73,7 +74,7 @@ const planetGeometry = new THREE.IcosahedronGeometry(5, 14)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.name = 'Planet'
 planet.position.set(0, -6, 0)
-addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
+addComponent(planet, Spin, { axis: 'z', speed: 0.35 })
 scene.add(planet)
 planet.visible = true
 
@@ -88,7 +89,7 @@ planeBody.name = 'PlaneBody'
 plane.add(planeBody)
 
 addComponent(planeBody, BodySphere, {
-  motionType: MotionType.STATIC,
+  motionType: MotionType.KINEMATIC,
 } as RigidBodySettings, {
   radius: 0.5
 } as SphereBodyParams)
@@ -105,7 +106,6 @@ scene.add(plane)
 // Coin
 //
 const coinGeometry = new THREE.ConeGeometry(0.2, 0.25, 3, 1)
-// coinGeometry.rotateZ(-Math.PI * 0.5)
 const coinMaterial = new THREE.MeshNormalNodeMaterial()
 
 const coin = new THREE.Object3D()
@@ -141,6 +141,19 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 
     addComponent(inner, Spin, { axis: 'y', speed: 1 + Math.random() * 2 })
     addComponent(inner, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
+    addComponent(inner, BodySphere, {
+      motionType: MotionType.STATIC,
+      sensor: true,
+    } as RigidBodySettings, {
+      radius: 0.15
+    } as SphereBodyParams)
+
+    const bodyComponent = getComponent(inner, BodySphere)
+
+    bodyComponent!.body!.userData = {
+      isCoin: true,
+      object: inner
+    } as object
   }
 }
 

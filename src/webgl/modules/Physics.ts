@@ -1,4 +1,9 @@
-import { ContextModule } from "three-start"
+import * as THREE from "three"
+import {
+  ContextModule,
+  getComponent,
+  destroy as destroyComponent
+} from "three-start"
 import {
   registerAll,
   createWorld,
@@ -8,15 +13,25 @@ import {
   addBroadphaseLayer,
   addObjectLayer,
   enableCollision,
-  updateWorld
+  updateWorld,
+  type Listener,
+  type RigidBody
 } from "crashcat"
 import { debugRenderer } from "crashcat/three"
+
+import { Body } from "../behaviors/physics/Body"
+
+type CoinUserData = {
+  isCoin: boolean
+  object: THREE.Object3D
+}
 
 export class PhysicsModule extends ContextModule {
   isDebug: boolean = false
   debugState: any | null = null
   settings: WorldSettings | null = null
   world: World | null = null
+  listener: Listener | null = null
 
   BROADPHASE_LAYER_MOVING: number | null = null
   BROADPHASE_LAYER_NOT_MOVING: number | null = null
@@ -45,13 +60,32 @@ export class PhysicsModule extends ContextModule {
 
     this.world = createWorld(this.settings)
 
+    this.listener = {
+      onContactAdded: (_bodyA: RigidBody, bodyB: RigidBody) => {
+        const userData = bodyB.userData as CoinUserData
+
+        if (userData.isCoin) {
+          const bodyComponent = getComponent(userData.object, Body)
+          const parent = bodyComponent!.object.parent
+
+          destroyComponent(bodyComponent as Body)
+          parent!.removeFromParent()
+
+        }
+      }
+    }
+
     if (this.isDebug) {
       this.createDebug()
     }
   }
 
-  onUpdate() {
-    updateWorld(this.world as World, undefined, this.ctx.getDeltaTime() as number)
+  onBeforeRender() {
+    updateWorld(
+      this.world as World,
+      this.listener as Listener,
+      this.ctx.getDeltaTime() as number
+    )
 
     if (this.isDebug) {
       debugRenderer.update(this.debugState, this.world as World)
