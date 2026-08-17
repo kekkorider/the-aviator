@@ -14,6 +14,7 @@ import {
   getComponent
 } from "three-start"
 import { MotionType } from 'crashcat'
+import { gsap } from 'gsap'
 
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
@@ -74,7 +75,7 @@ const planetGeometry = new THREE.IcosahedronGeometry(5, 14)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.name = 'Planet'
 planet.position.set(0, -6, 0)
-addComponent(planet, Spin, { axis: 'z', speed: 0.35 })
+addComponent(planet, Spin, { axis: 'z', speed: 0.5 })
 scene.add(planet)
 planet.visible = true
 
@@ -116,14 +117,7 @@ coinInner.name = 'CoinInner'
 
 coin.add(coinInner)
 
-// addComponent(coin, BodySphere, {
-//   motionType: MotionType.STATIC,
-// } as RigidBodySettings, {
-//   radius: 0.15
-// } as SphereBodyParams)
-// scene.add(coin)
-
-function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0): void {
+function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
   let i: number, x: number, y: number
 
   for (i = 0; i < amount; i++) {
@@ -155,11 +149,20 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
       object: inner
     } as object
   }
+
+  if (spawnAfter) {
+    gsap.delayedCall(spawnAfter, () => {
+      const angle = -(planet.rotation.z % (Math.PI * 2)) - Math.PI / 2
+      const amount = gsap.utils.random(3, 6)
+      const radius = gsap.utils.random(5.5, 8)
+      const spawnAfter = gsap.utils.random(2, 4)
+
+      spawnCoins(amount, Math.PI * 0.03, radius, angle, spawnAfter)
+    })
+  }
 }
 
-spawnCoins(7, Math.PI * 0.03, 6.5, Math.PI * 0.25)
-spawnCoins(11, Math.PI * 0.03, 8, Math.PI * -0.35)
-spawnCoins(9, Math.PI * 0.03, 6, Math.PI * -1)
+spawnCoins(5, Math.PI * 0.03, 6.5, 0, 2)
 
 //
 // Post-processing and Inspector
