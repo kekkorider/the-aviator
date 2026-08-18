@@ -3,6 +3,7 @@ import { OrbitControlsModule } from './webgl/modules/OrbitControls'
 import { PhysicsModule } from './webgl/modules/Physics'
 import { InspectorModule } from './webgl/modules/Inspector'
 import { InputModule } from './webgl/modules/Input'
+import { GameModule } from './webgl/modules/Game'
 
 declare module "three-start" {
   interface ThreeStartRegister {
@@ -12,6 +13,7 @@ declare module "three-start" {
       physics: PhysicsModule
       inspector: InspectorModule
       input: InputModule
+      game: GameModule
     }
   }
 }

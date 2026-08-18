@@ -1,32 +1,24 @@
-import * as THREE from "three"
-import {
-  ContextModule,
-  getComponent,
-  destroy as destroyComponent
-} from "three-start"
+import { ContextModule } from "three-start"
 import {
   registerAll,
   createWorld,
-  type World,
   createWorldSettings,
-  type WorldSettings,
   addBroadphaseLayer,
   addObjectLayer,
   enableCollision,
   updateWorld,
+  type World,
+  type WorldSettings,
   type Listener,
   type RigidBody
 } from "crashcat"
 import { debugRenderer } from "crashcat/three"
 
-import { Body } from "../behaviors/physics/Body"
-
-type CoinUserData = {
-  isCoin: boolean
-  object: THREE.Object3D
+type PhysicsEvents = {
+  contactAdded: [bodyA: RigidBody, bodyB: RigidBody]
 }
 
-export class PhysicsModule extends ContextModule {
+export class PhysicsModule extends ContextModule<PhysicsEvents> {
   isDebug: boolean = false
   debugState: any | null = null
   settings: WorldSettings | null = null
@@ -61,17 +53,8 @@ export class PhysicsModule extends ContextModule {
     this.world = createWorld(this.settings)
 
     this.listener = {
-      onContactAdded: (_bodyA: RigidBody, bodyB: RigidBody) => {
-        const userData = bodyB.userData as CoinUserData
-
-        if (userData.isCoin) {
-          const bodyComponent = getComponent(userData.object, Body)
-          const parent = bodyComponent!.object.parent
-
-          destroyComponent(bodyComponent as Body)
-          parent!.removeFromParent()
-
-        }
+      onContactAdded: (bodyA: RigidBody, bodyB: RigidBody) => {
+        this.emit('contactAdded', bodyA, bodyB)
       }
     }
 

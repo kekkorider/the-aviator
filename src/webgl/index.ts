@@ -11,7 +11,8 @@ import {
   ThreeContextEvents,
   ThreeStart,
   addComponent,
-  getComponent
+  getComponent,
+  destroy as destroyComponent
 } from "three-start"
 import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
@@ -25,7 +26,9 @@ import { OrbitControlsModule } from './modules/OrbitControls'
 import { PhysicsModule } from './modules/Physics'
 import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
+import { GameModule } from './modules/Game'
 
+import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
 import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
@@ -33,6 +36,11 @@ import { PlaneControl } from './behaviors/PlaneControl'
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
 
 import type { RigidBodySettings } from 'crashcat'
+
+type CoinUserData = {
+  isCoin: boolean
+  object: THREE.Object3D
+}
 
 //
 // Setup
@@ -45,6 +53,7 @@ starter.addModules({
   physics: new PhysicsModule(true),
   inspector: new InspectorModule(),
   input: new InputModule(),
+  game: new GameModule(),
 })
 
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
@@ -190,4 +199,37 @@ function createPostProcessing(): void {
   })
 
   renderPipeline.outputNode = outputNode()
+
+  const scoreElem = document.getElementById('score') as HTMLDivElement
+  const scaleScoreTween = gsap.fromTo(scoreElem,
+    { scale: 1, rotation: 0 },
+    {
+      scale: 1.1,
+      rotation: () => gsap.utils.random(-10, 10),
+      duration: 0.08,
+      repeat: 1,
+      yoyo: true,
+      ease: 'none',
+      overwrite: true,
+      paused: true
+    }
+  )
+  modules.game.on('scoreChanged', (score) => {
+    scoreElem.textContent = score.toString().padStart(3, '0')
+    scaleScoreTween.invalidate().restart()
+  })
+
+  modules.physics.on('contactAdded', (_bodyA, bodyB) => {
+    const userData = bodyB.userData as CoinUserData
+
+    if (userData.isCoin) {
+      const bodyComponent = getComponent(userData.object, Body)
+      const parent = bodyComponent!.object.parent
+
+      destroyComponent(bodyComponent as Body)
+      parent!.removeFromParent()
+
+      modules.game.addScore(1)
+    }
+  })
 }
