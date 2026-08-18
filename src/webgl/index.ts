@@ -20,6 +20,7 @@ import { gsap } from 'gsap'
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
+import { BombMaterial, map as bombMap } from './materials/bomb'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
 import { OrbitControlsModule } from './modules/OrbitControls'
@@ -59,6 +60,7 @@ starter.addModules({
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
 
 let plane: THREE.Mesh | undefined = undefined
+let bomb: THREE.Mesh | undefined = undefined
 
 renderer.setClearColor(0xe4e0ba)
 
@@ -71,6 +73,11 @@ starter.start()
 starter.mount(document.getElementById('app')! as HTMLDivElement)
 
 await modules.assetLoader.loadModels('game.glb')
+await modules.assetLoader.loadTextures('bomb-base.png')
+
+modules.assetLoader.getTexture('bomb-base')!.flipY = false
+
+bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
 
 //
 // Camera
@@ -93,6 +100,11 @@ planet.visible = true
 //
 plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
 plane.material = PlaneMaterial
+
+bomb = modules.assetLoader.getModel('game')?.scene.getObjectByName('Bomb') as THREE.Mesh
+bomb.geometry.scale(0.3, 0.3, 0.3)
+bomb.geometry.rotateZ(-Math.PI / 2)
+bomb.material = BombMaterial
 
 const planeBody = new THREE.Object3D()
 planeBody.name = 'PlaneBody'
@@ -127,36 +139,70 @@ coinInner.name = 'CoinInner'
 coin.add(coinInner)
 
 function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
-  let i: number, x: number, y: number
+  let i: number, x: number, y: number, rng: number
 
   for (i = 0; i < amount; i++) {
-    const clone = coin.clone(true)
-    const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
+    rng = Math.random()
 
-    const angle = startAngle - i * gap
+    if (rng > 0.2) {
+      const clone = coin.clone(true)
+      const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
 
-    x = Math.cos(angle) * baseRadius
-    y = Math.sin(angle) * baseRadius
+      const angle = startAngle - i * gap
 
-    clone.position.set(x, y, 0)
-    clone.rotation.z = angle
-    planet.add(clone)
+      x = Math.cos(angle) * baseRadius
+      y = Math.sin(angle) * baseRadius
 
-    addComponent(inner, Spin, { axis: 'y', speed: 1 + Math.random() * 2 })
-    addComponent(inner, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
-    addComponent(inner, BodySphere, {
-      motionType: MotionType.STATIC,
-      sensor: true,
-    } as RigidBodySettings, {
-      radius: 0.15
-    } as SphereBodyParams)
+      clone.position.set(x, y, 0)
+      clone.rotation.z = angle
+      planet.add(clone)
 
-    const bodyComponent = getComponent(inner, BodySphere)
+      addComponent(inner, Spin, { axis: 'y', speed: 1 + Math.random() * 2 })
+      addComponent(inner, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
+      addComponent(inner, BodySphere, {
+        motionType: MotionType.STATIC,
+        sensor: true,
+      } as RigidBodySettings, {
+        radius: 0.15
+      } as SphereBodyParams)
 
-    bodyComponent!.body!.userData = {
-      isCoin: true,
-      object: inner
-    } as object
+      const bodyComponent = getComponent(inner, BodySphere)
+
+      bodyComponent!.body!.userData = {
+        isCoin: true,
+        object: inner
+      } as object
+    } else {
+      const wrapper = new THREE.Object3D()
+      wrapper.name = 'BombWrapper'
+
+      const clone = bomb!.clone() as THREE.Mesh
+      const angle = startAngle - i * gap
+
+      wrapper.add(clone)
+
+      x = Math.cos(angle) * baseRadius
+      y = Math.sin(angle) * baseRadius
+
+      wrapper.position.set(x, y, 0)
+      wrapper.rotation.z = angle
+      planet.add(wrapper)
+
+      addComponent(clone, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
+      addComponent(clone, BodySphere, {
+        motionType: MotionType.STATIC,
+        sensor: true,
+      } as RigidBodySettings, {
+        radius: 0.15
+      } as SphereBodyParams)
+
+      const bodyComponent = getComponent(clone, BodySphere)
+
+      bodyComponent!.body!.userData = {
+        isBomb: true,
+        object: clone
+      } as object
+    }
   }
 
   if (spawnAfter) {
@@ -174,7 +220,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 spawnCoins(5, Math.PI * 0.03, 6.5, 0, 2)
 
 //
-// Post-processing and Inspector
+// Post-processing
 //
 function createPostProcessing(): void {
   scenePass.setMRT(
