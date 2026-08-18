@@ -8,7 +8,7 @@ export class GameModule extends ContextModule<GameEvents> {
   private score: number = 0
 
   addScore(score: number): void {
-    this.score += score
+    this.score = Math.max(0, this.score + score)
     this.emit('scoreChanged', this.score)
   }
 

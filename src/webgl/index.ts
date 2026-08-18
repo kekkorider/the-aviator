@@ -38,8 +38,9 @@ import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/phy
 
 import type { RigidBodySettings } from 'crashcat'
 
-type CoinUserData = {
+type PickupUserData = {
   isCoin: boolean
+  isBomb: boolean
   object: THREE.Object3D
 }
 
@@ -52,7 +53,7 @@ starter.addModules({
   assetLoader: new AssetLoaderModule(),
   orbitControls: new OrbitControlsModule(),
   physics: new PhysicsModule(true),
-  inspector: new InspectorModule(),
+  // inspector: new InspectorModule(),
   input: new InputModule(),
   game: new GameModule(),
 })
@@ -217,7 +218,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   }
 }
 
-spawnCoins(5, Math.PI * 0.03, 6.5, 0, 2)
+// spawnCoins(5, Math.PI * 0.03, 6.5, 0, 2)
 
 //
 // Post-processing
@@ -266,7 +267,7 @@ function createPostProcessing(): void {
   })
 
   modules.physics.on('contactAdded', (_bodyA, bodyB) => {
-    const userData = bodyB.userData as CoinUserData
+    const userData = bodyB.userData as PickupUserData
 
     if (userData.isCoin) {
       const bodyComponent = getComponent(userData.object, Body)
@@ -276,6 +277,16 @@ function createPostProcessing(): void {
       parent!.removeFromParent()
 
       modules.game.addScore(1)
+    }
+
+    if (userData.isBomb) {
+      const bodyComponent = getComponent(userData.object, Body)
+      const parent = bodyComponent!.object.parent
+
+      destroyComponent(bodyComponent as Body)
+      parent!.removeFromParent()
+
+      modules.game.addScore(-5)
     }
   })
 }
