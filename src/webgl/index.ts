@@ -21,11 +21,17 @@ import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
 import { BombMaterial, map as bombMap } from './materials/bomb'
+import {
+  ParticlesMaterial,
+  computeInit,
+  computeUpdate,
+  COUNT as PARTICLE_COUNT
+} from './materials/particles'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
 import { OrbitControlsModule } from './modules/OrbitControls'
 import { PhysicsModule } from './modules/Physics'
-import { InspectorModule } from './modules/Inspector'
+// import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
 import { GameModule } from './modules/Game'
 
@@ -69,7 +75,14 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
 })
 
+starter.ctx.on(ThreeContextEvents.Update, () => {
+  renderer.compute(computeUpdate)
+})
+
 starter.start()
+
+await renderer.init()
+renderer.compute(computeInit)
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
 
@@ -94,7 +107,7 @@ planet.name = 'Planet'
 planet.position.set(0, -6, 0)
 addComponent(planet, Spin, { axis: 'z', speed: 0.5 })
 scene.add(planet)
-planet.visible = true
+planet.visible = false
 
 //
 // Plane
@@ -138,6 +151,11 @@ const coinInner = new THREE.Mesh(coinGeometry, coinMaterial)
 coinInner.name = 'CoinInner'
 
 coin.add(coinInner)
+
+const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
+const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
+particles.name = 'Particles'
+scene.add(particles)
 
 function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
   let i: number, x: number, y: number, rng: number
