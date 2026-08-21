@@ -136,7 +136,7 @@ const propeller = plane.getObjectByName('Propeller') as THREE.Mesh
 propeller.material = PropellerMaterial
 addComponent(propeller, Spin, { axis: 'x', speed: 20 })
 
-scene.add(plane)
+// scene.add(plane)
 
 //
 // Coin
@@ -152,9 +152,13 @@ coinInner.name = 'CoinInner'
 
 coin.add(coinInner)
 
+//
+// Particles
+//
 const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
 const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
 particles.name = 'Particles'
+addComponent(particles, PlaneControl)
 scene.add(particles)
 
 function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
