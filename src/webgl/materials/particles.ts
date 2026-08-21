@@ -1,15 +1,25 @@
 import { MeshBasicNodeMaterial, StorageInstancedBufferAttribute } from 'three/webgpu'
-import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, positionWorld } from 'three/tsl'
+import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If } from 'three/tsl'
 
-export const COUNT = 20
+export const COUNT = 50
 
 export const life = uniform(2)
+
+export const emitterPosition = uniform(vec3())
 
 export const ParticlesMaterial = new MeshBasicNodeMaterial()
 
 const positionsArray = new Float32Array(COUNT * 3)
 const positionsAttribute = new StorageInstancedBufferAttribute(positionsArray, 3)
 const positionsStorage = storage(positionsAttribute, 'vec3', COUNT)
+
+const originsArray = new Float32Array(COUNT * 3)
+const originsAttribute = new StorageInstancedBufferAttribute(originsArray, 3)
+const originsStorage = storage(originsAttribute, 'vec3', COUNT)
+
+const lastLifeArray = new Float32Array(COUNT)
+const lastLifeAttribute = new StorageInstancedBufferAttribute(lastLifeArray, 1)
+const lastLifeStorage = storage(lastLifeAttribute, 'float', COUNT)
 
 const rotationsArray = new Float32Array(COUNT * 3)
 const rotationsAttribute = new StorageInstancedBufferAttribute(rotationsArray, 3)
@@ -23,11 +33,13 @@ export const computeInit = Fn(() => {
   const idx = float(instanceIndex)
 
   scalesStorage.element(idx).assign(1)
+  lastLifeStorage.element(idx).assign(0)
 
-  const position = positionsStorage.element(idx)
   const x = hash(idx).remap(0, 1, -0.2, 0.2)
   const z = hash(idx.add(42)).remap(0, 1, -0.2, 0.2)
-  position.assign(vec3(x, 0, z))
+  const origin = vec3(x, 0, z)
+  originsStorage.element(idx).assign(origin)
+  positionsStorage.element(idx).assign(origin)
 
   const rotation = vec3(
     hash(idx.add(42)).remap(0, 1, 0, PI),
@@ -40,9 +52,18 @@ export const computeInit = Fn(() => {
 export const computeUpdate = Fn(() => {
   const idx = float(instanceIndex)
   const position = positionsStorage.element(idx)
+  const origin = originsStorage.element(idx)
+  const lastLife = lastLifeStorage.element(idx)
 
   const particleLife = time.sub(idx.mul(0.15)).mod(life)
-  position.y.assign(particleLife)
+
+  If(particleLife.lessThan(lastLife), () => {
+    const x = hash(idx).remap(0, 1, -0.2, 0.2)
+    const z = hash(idx.add(42)).remap(0, 1, -0.2, 0.2)
+    origin.assign(emitterPosition.add(vec3(x, 0, z)))
+  })
+  lastLife.assign(particleLife)
+  position.assign(origin.add(vec3(0, particleLife, 0)))
 
   const particleScale = particleLife.remap(0, 0.4, 0.2, 1).min(1)
   particleScale.mulAssign(particleLife.remap(1.65, 2, 1, 0).min(1))
@@ -59,9 +80,9 @@ ParticlesMaterial.positionNode = Fn(() => {
 
   const rotated = rotate(positionLocal, instanceRotation)
   const scaled = rotated.mul(instanceScale)
-  const translated = scaled.add(instancePosition)
+  const worldPosition = scaled.add(instancePosition)
 
-  return translated
+  return modelWorldMatrixInverse.mul(worldPosition).xyz
 })()
 
 ParticlesMaterial.colorNode = uv()

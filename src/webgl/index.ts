@@ -25,7 +25,8 @@ import {
   ParticlesMaterial,
   computeInit,
   computeUpdate,
-  COUNT as PARTICLE_COUNT
+  COUNT as PARTICLE_COUNT,
+  emitterPosition
 } from './materials/particles'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
@@ -39,6 +40,7 @@ import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
 import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
+import { TransformControl } from './behaviors/TransformControl'
 
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
 
@@ -57,7 +59,7 @@ const starter = new ThreeStart()
 
 starter.addModules({
   assetLoader: new AssetLoaderModule(),
-  orbitControls: new OrbitControlsModule(),
+  // orbitControls: new OrbitControlsModule(),
   physics: new PhysicsModule(true),
   // inspector: new InspectorModule(),
   input: new InputModule(),
@@ -73,10 +75,6 @@ renderer.setClearColor(0xe4e0ba)
 
 starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
-})
-
-starter.ctx.on(ThreeContextEvents.Update, () => {
-  renderer.compute(computeUpdate)
 })
 
 starter.start()
@@ -97,6 +95,11 @@ bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
 // Camera
 //
 camera.position.z = 5
+
+camera.position.x = 1
+camera.position.y = 1
+
+camera.lookAt(0, 0, 0)
 
 //
 // Planet
@@ -158,8 +161,13 @@ coin.add(coinInner)
 const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
 const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
 particles.name = 'Particles'
-addComponent(particles, PlaneControl)
+addComponent(particles, TransformControl)
 scene.add(particles)
+
+starter.ctx.on(ThreeContextEvents.Update, () => {
+  particles.getWorldPosition(emitterPosition.value)
+  renderer.compute(computeUpdate)
+})
 
 function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
   let i: number, x: number, y: number, rng: number
