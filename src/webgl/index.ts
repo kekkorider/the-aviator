@@ -32,7 +32,7 @@ import {
 import { AssetLoaderModule } from './modules/AssetLoader'
 // import { OrbitControlsModule } from './modules/OrbitControls'
 import { PhysicsModule } from './modules/Physics'
-import { InspectorModule } from './modules/Inspector'
+// import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
 import { GameModule } from './modules/Game'
 
@@ -61,7 +61,7 @@ starter.addModules({
   assetLoader: new AssetLoaderModule(),
   // orbitControls: new OrbitControlsModule(),
   physics: new PhysicsModule(false),
-  inspector: new InspectorModule(),
+  // inspector: new InspectorModule(),
   input: new InputModule(),
   game: new GameModule(),
 })

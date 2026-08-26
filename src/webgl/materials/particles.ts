@@ -1,5 +1,5 @@
 import { MeshBasicNodeMaterial, StorageInstancedBufferAttribute, Color } from 'three/webgpu'
-import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If, mix, positionWorld } from 'three/tsl'
+import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, deltaTime, modelWorldMatrixInverse, If, mix } from 'three/tsl'
 
 export const COUNT = 50
 
