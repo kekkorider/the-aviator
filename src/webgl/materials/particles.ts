@@ -5,7 +5,9 @@ export const COUNT = 50
 
 export const colorA = uniform(new Color(180 / 255, 150 / 255, 150 / 255))
 export const colorB = uniform(new Color(71 / 255, 51 / 255, 51 / 255))
-export const life = uniform(2)
+export const lifeMin = uniform(0.5)
+export const lifeMax = uniform(2.5)
+// export const life = uniform(2)
 export const emitterPosition = uniform(vec3())
 export const direction = uniform(vec3(-1, 0, 0))
 
@@ -18,6 +20,10 @@ const positionsStorage = storage(positionsAttribute, 'vec3', COUNT)
 const originsArray = new Float32Array(COUNT * 3)
 const originsAttribute = new StorageInstancedBufferAttribute(originsArray, 3)
 const originsStorage = storage(originsAttribute, 'vec3', COUNT)
+
+const lifeArray = new Float32Array(COUNT)
+const lifeAttribute = new StorageInstancedBufferAttribute(lifeArray, 1)
+const lifeStorage = storage(lifeAttribute, 'float', COUNT)
 
 const lastLifeArray = new Float32Array(COUNT)
 const lastLifeAttribute = new StorageInstancedBufferAttribute(lastLifeArray, 1)
@@ -55,6 +61,9 @@ export const computeInit = Fn(() => {
   rotationsStorage.element(idx).assign(rotation)
 
   colorsStorage.element(idx).assign(colorA)
+
+  const life = lifeMin.add(lifeMax.sub(lifeMin).mul(hash(idx)))
+  lifeStorage.element(idx).assign(life)
 })().compute(COUNT)
 
 export const computeUpdate = Fn(() => {
@@ -62,6 +71,7 @@ export const computeUpdate = Fn(() => {
   const position = positionsStorage.element(idx)
   const origin = originsStorage.element(idx)
   const lastLife = lastLifeStorage.element(idx)
+  const life = lifeStorage.element(idx)
 
   const particleLife = time.sub(idx.mul(0.15)).mod(life)
 
@@ -69,6 +79,9 @@ export const computeUpdate = Fn(() => {
     const x = hash(idx).remap(0, 1, -0.2, 0.2)
     const z = hash(idx.add(42)).remap(0, 1, -0.2, 0.2)
     origin.assign(emitterPosition.add(vec3(x, 0, z)))
+
+    const life = lifeMin.add(lifeMax.sub(lifeMin).mul(hash(idx)))
+    lifeStorage.element(idx).assign(life)
   })
   lastLife.assign(particleLife)
 
@@ -76,7 +89,7 @@ export const computeUpdate = Fn(() => {
   position.assign(origin.add(newPosition))
 
   const particleScale = particleLife.remap(0, 0.4, 0.2, 1).min(1)
-  particleScale.mulAssign(particleLife.remap(1.65, 2, 1, 0).min(1))
+  particleScale.mulAssign(particleLife.remap(life.mul(0.8), life, 1, 0).min(1))
   scalesStorage.element(idx).assign(particleScale)
 
   const rotation = rotationsStorage.element(idx)

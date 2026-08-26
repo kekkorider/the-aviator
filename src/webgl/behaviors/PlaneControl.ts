@@ -11,10 +11,13 @@ export class PlaneControl extends Object3DBehaviour {
   observer: Observer | null = null
   raycaster: THREE.Raycaster = new THREE.Raycaster()
   cursorY: number = 0
+  cameraPositionOriginal: THREE.Vector3 = new THREE.Vector3()
 
   private _updateViewport: Function = () => {}
 
   onAwake() {
+    this.cameraPositionOriginal.copy(this.ctx.camera.position)
+
     this._updateViewport = this.updateViewport.bind(this)
 
     this.createMouseControl()
@@ -46,9 +49,24 @@ export class PlaneControl extends Object3DBehaviour {
       }
     )
 
+    const moveYCamera = gsap.quickTo(
+      this.ctx.camera.position,
+      'y',
+      {
+        duration: 0.65,
+        overwrite: 'auto',
+        ease: 'power2.out'
+      }
+    )
+
     const targetY = gsap.utils.pipe(
       gsap.utils.clamp(-1, 1),
-      gsap.utils.mapRange(-1, 1, -1, 2)
+      gsap.utils.mapRange(-1, 1, -1.5, 2.3)
+    )
+
+    const targetYCamera = gsap.utils.pipe(
+      gsap.utils.clamp(-1, 1),
+      gsap.utils.mapRange(-1, 1, this.cameraPositionOriginal.y - 0.35, this.cameraPositionOriginal.y + 0.35)
     )
 
     this.observer = Observer.create({
@@ -76,6 +94,7 @@ export class PlaneControl extends Object3DBehaviour {
         this.ndc.setComponent(1, -(event.y! / this.viewport.y) * 2 + 1)
 
         moveY(targetY(this.ndc.y))
+        moveYCamera(targetYCamera(this.ndc.y))
       }
     })
   }

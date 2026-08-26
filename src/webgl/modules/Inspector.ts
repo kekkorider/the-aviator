@@ -4,7 +4,7 @@ import { Inspector } from 'three/addons/inspector/Inspector.js'
 import type { ParametersGroup } from "three/examples/jsm/inspector/tabs/Parameters.js"
 
 import { seaSpeed, seaHeight, colorShallow, colorDeep } from '../materials/planet'
-import { colorA, colorB } from '../materials/particles'
+import { colorA, colorB, lifeMin, lifeMax } from '../materials/particles'
 export class InspectorModule extends ContextModule {
   inspector: Inspector | null = null
   gui: ParametersGroup | null = null
@@ -26,8 +26,10 @@ export class InspectorModule extends ContextModule {
   }
 
   private createPlaneFolder() {
-    const planetFolder = this.gui!.addFolder('Planet')
+    const planetFolder = this.gui!.addFolder('Plane')
     planetFolder.addColor(colorA, 'value').name('Smoke Color A')
     planetFolder.addColor(colorB, 'value').name('Smoke Color B')
+    planetFolder.add(lifeMin, 'value', 0, 2).name('Life Min')
+    planetFolder.add(lifeMax, 'value', 0, 4).name('Life Max')
   }
 }
