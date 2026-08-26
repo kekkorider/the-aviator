@@ -1,12 +1,12 @@
 import { MeshBasicNodeMaterial, StorageInstancedBufferAttribute, Color } from 'three/webgpu'
-import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If, mix } from 'three/tsl'
+import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If, mix, positionWorld } from 'three/tsl'
 
 export const COUNT = 50
 
 export const colorA = uniform(new Color(180 / 255, 150 / 255, 150 / 255))
 export const colorB = uniform(new Color(71 / 255, 51 / 255, 51 / 255))
 export const lifeMin = uniform(0.5)
-export const lifeMax = uniform(2.5)
+export const lifeMax = uniform(3.5)
 // export const life = uniform(2)
 export const emitterPosition = uniform(vec3())
 export const direction = uniform(vec3(-1, 0, 0))
@@ -47,9 +47,9 @@ export const computeInit = Fn(() => {
   scalesStorage.element(idx).assign(1)
   lastLifeStorage.element(idx).assign(0)
 
-  const x = hash(idx).remap(0, 1, -0.2, 0.2)
-  const z = hash(idx.add(42)).remap(0, 1, -0.2, 0.2)
-  const origin = vec3(x, 0, z)
+  // const x = hash(idx).remap(0, 1, -0.2, 0.2)
+  // const z = hash(idx.add(42)).remap(0, 1, -0.2, 0.2)
+  const origin = vec3(-999, 0, 0)
   originsStorage.element(idx).assign(origin)
   positionsStorage.element(idx).assign(origin)
 

@@ -12,6 +12,7 @@ export class PlaneControl extends Object3DBehaviour {
   raycaster: THREE.Raycaster = new THREE.Raycaster()
   cursorY: number = 0
   cameraPositionOriginal: THREE.Vector3 = new THREE.Vector3()
+  rotateXTween: gsap.core.Tween | null = null
 
   private _updateViewport: Function = () => {}
 
@@ -21,6 +22,7 @@ export class PlaneControl extends Object3DBehaviour {
     this._updateViewport = this.updateViewport.bind(this)
 
     this.createMouseControl()
+    this.createRotateXTween()
 
     this._updateViewport()
 
@@ -89,6 +91,12 @@ export class PlaneControl extends Object3DBehaviour {
           overwrite: 'auto'
         })
       },
+      onClick: () => {
+        if (this.rotateXTween?.isActive()) return
+
+        this.rotateXTween?.invalidate()
+        this.rotateXTween?.restart()
+      },
       onMove: (event) => {
         this.ndc.setComponent(0, (event.x! / this.viewport.x) * 2 - 1)
         this.ndc.setComponent(1, -(event.y! / this.viewport.y) * 2 + 1)
@@ -96,6 +104,18 @@ export class PlaneControl extends Object3DBehaviour {
         moveY(targetY(this.ndc.y))
         moveYCamera(targetYCamera(this.ndc.y))
       }
+    })
+  }
+
+  private createRotateXTween() {
+    this.rotateXTween = gsap.fromTo(this.object.rotation, { x: 0 }, {
+      paused: true,
+      x: () => {
+        return Math.PI * 2 * Math.sign(Math.random() - 0.5)
+      },
+      duration: 1.2,
+      overwrite: 'auto',
+      ease: 'back.inOut(2.5)'
     })
   }
 }

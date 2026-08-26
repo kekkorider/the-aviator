@@ -77,12 +77,22 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
 })
 
+
 starter.start()
 
 await renderer.init()
 await renderer.computeAsync(computeInit)
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
+
+// const canvas = starter.ctx.canvasContainer?.querySelector('canvas')
+// canvas?.setAttribute('layoutsubtree', '')
+
+// const hud = document.getElementById('hud') as HTMLDivElement
+// console.log(hud)
+
+// canvas?.appendChild(hud)
+
 
 await modules.assetLoader.loadModels('game.glb')
 await modules.assetLoader.loadTextures('bomb-base.png')
