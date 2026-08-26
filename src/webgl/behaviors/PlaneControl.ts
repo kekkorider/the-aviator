@@ -25,7 +25,7 @@ export class PlaneControl extends Object3DBehaviour {
   }
 
   onUpdate() {
-    this.object.rotation.z *= 0.97
+    this.object.rotation.z *= 0.975
   }
 
   private updateViewport() {
@@ -46,24 +46,9 @@ export class PlaneControl extends Object3DBehaviour {
       }
     )
 
-    const moveX = gsap.quickTo(
-      this.object.position,
-      'x',
-      {
-        duration: 0.5,
-        overwrite: 'auto',
-        ease: 'power2.out'
-      }
-    )
-
     const targetY = gsap.utils.pipe(
-      gsap.utils.clamp(-0.5, 0.5),
-      gsap.utils.mapRange(-0.5, 0.5, -0.5, 1.7)
-    )
-
-    const targetX = gsap.utils.pipe(
-      gsap.utils.clamp(-0.5, 0.5),
-      gsap.utils.mapRange(-0.5, 0.5, -2.5, 2.5)
+      gsap.utils.clamp(-1, 1),
+      gsap.utils.mapRange(-1, 1, -1, 2)
     )
 
     this.observer = Observer.create({
@@ -72,7 +57,7 @@ export class PlaneControl extends Object3DBehaviour {
         const ratio = Math.min(100, Math.abs(event.deltaY)) / 100
 
         gsap.to(this.object.rotation, {
-          z: Math.PI * 0.15 * ratio,
+          z: Math.PI * 0.35 * ratio,
           duration: 0.25,
           overwrite: 'auto'
         })
@@ -81,7 +66,7 @@ export class PlaneControl extends Object3DBehaviour {
         const ratio = Math.min(100, Math.abs(event.deltaY)) / 100
 
         gsap.to(this.object.rotation, {
-          z: Math.PI * -0.15 * ratio,
+          z: Math.PI * -0.35 * ratio,
           duration: 0.25,
           overwrite: 'auto'
         })
@@ -90,14 +75,7 @@ export class PlaneControl extends Object3DBehaviour {
         this.ndc.setComponent(0, (event.x! / this.viewport.x) * 2 - 1)
         this.ndc.setComponent(1, -(event.y! / this.viewport.y) * 2 + 1)
 
-        this.ndc.clone().unproject(this.ctx.camera)
-
-        const direction = this.ndc.sub(this.ctx.camera.position).normalize()
-        const distance = -this.ctx.camera.position.z / direction.z
-        const pos = this.ctx.camera.position.clone().add(direction.multiplyScalar(distance))
-
-        moveX(targetX(pos.x))
-        moveY(targetY(pos.y))
+        moveY(targetY(this.ndc.y))
       }
     })
   }

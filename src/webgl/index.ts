@@ -30,9 +30,9 @@ import {
 } from './materials/particles'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
-import { OrbitControlsModule } from './modules/OrbitControls'
+// import { OrbitControlsModule } from './modules/OrbitControls'
 import { PhysicsModule } from './modules/Physics'
-// import { InspectorModule } from './modules/Inspector'
+import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
 import { GameModule } from './modules/Game'
 
@@ -40,7 +40,7 @@ import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
 import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
-import { TransformControl } from './behaviors/TransformControl'
+// import { TransformControl } from './behaviors/TransformControl'
 
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
 
@@ -60,8 +60,8 @@ const starter = new ThreeStart()
 starter.addModules({
   assetLoader: new AssetLoaderModule(),
   // orbitControls: new OrbitControlsModule(),
-  physics: new PhysicsModule(true),
-  // inspector: new InspectorModule(),
+  physics: new PhysicsModule(false),
+  inspector: new InspectorModule(),
   input: new InputModule(),
   game: new GameModule(),
 })
@@ -80,7 +80,7 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
 starter.start()
 
 await renderer.init()
-renderer.compute(computeInit)
+await renderer.computeAsync(computeInit)
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
 
@@ -104,18 +104,20 @@ camera.lookAt(0, 0, 0)
 //
 // Planet
 //
-const planetGeometry = new THREE.IcosahedronGeometry(5, 14)
+const planetGeometry = new THREE.IcosahedronGeometry(10, 14)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.name = 'Planet'
-planet.position.set(0, -6, 0)
-addComponent(planet, Spin, { axis: 'z', speed: 0.5 })
+planet.position.set(0, -12, 0)
+addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
 scene.add(planet)
-planet.visible = false
+planet.visible = true
 
 //
 // Plane
 //
 plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
+plane.scale.set(0.6, 0.6, 0.6)
+plane.position.x = -1.5
 plane.material = PlaneMaterial
 
 bomb = modules.assetLoader.getModel('game')?.scene.getObjectByName('Bomb') as THREE.Mesh
@@ -130,7 +132,7 @@ plane.add(planeBody)
 addComponent(planeBody, BodySphere, {
   motionType: MotionType.KINEMATIC,
 } as RigidBodySettings, {
-  radius: 0.5
+  radius: 0.25
 } as SphereBodyParams)
 
 addComponent(plane, PlaneControl)
@@ -139,7 +141,7 @@ const propeller = plane.getObjectByName('Propeller') as THREE.Mesh
 propeller.material = PropellerMaterial
 addComponent(propeller, Spin, { axis: 'x', speed: 20 })
 
-// scene.add(plane)
+scene.add(plane)
 
 //
 // Coin
@@ -160,9 +162,10 @@ coin.add(coinInner)
 //
 const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
 const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
+particles.position.set(-0.7, 0.1, 0)
 particles.name = 'Particles'
-addComponent(particles, TransformControl)
-scene.add(particles)
+// addComponent(particles, TransformControl)
+plane.add(particles)
 
 starter.ctx.on(ThreeContextEvents.Update, () => {
   particles.getWorldPosition(emitterPosition.value)
@@ -175,7 +178,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   for (i = 0; i < amount; i++) {
     rng = Math.random()
 
-    if (rng > 0.2) {
+    if (rng > 0.1) {
       const clone = coin.clone(true)
       const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
 
@@ -240,7 +243,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
     gsap.delayedCall(spawnAfter, () => {
       const angle = -(planet.rotation.z % (Math.PI * 2)) - Math.PI / 2
       const amount = gsap.utils.random(3, 6)
-      const radius = gsap.utils.random(5.5, 8)
+      const radius = gsap.utils.random(11, 14)
       const spawnAfter = gsap.utils.random(2, 4)
 
       spawnCoins(amount, Math.PI * 0.03, radius, angle, spawnAfter)
@@ -248,7 +251,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   }
 }
 
-// spawnCoins(5, Math.PI * 0.03, 6.5, 0, 2)
+spawnCoins(5, Math.PI * 0.03, 11, 0, 2)
 
 //
 // Post-processing

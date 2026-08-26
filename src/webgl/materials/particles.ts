@@ -1,11 +1,13 @@
-import { MeshBasicNodeMaterial, StorageInstancedBufferAttribute } from 'three/webgpu'
-import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If } from 'three/tsl'
+import { MeshBasicNodeMaterial, StorageInstancedBufferAttribute, Color } from 'three/webgpu'
+import { Fn, instanceIndex, vec3, storage, positionLocal, float, uniform, time, PI, hash, rotate, uv, deltaTime, modelWorldMatrixInverse, If, mix } from 'three/tsl'
 
 export const COUNT = 50
 
+export const colorA = uniform(new Color(180 / 255, 150 / 255, 150 / 255))
+export const colorB = uniform(new Color(71 / 255, 51 / 255, 51 / 255))
 export const life = uniform(2)
-
 export const emitterPosition = uniform(vec3())
+export const direction = uniform(vec3(-1, 0, 0))
 
 export const ParticlesMaterial = new MeshBasicNodeMaterial()
 
@@ -29,6 +31,10 @@ const scalesArray = new Float32Array(COUNT)
 const scalesAttribute = new StorageInstancedBufferAttribute(scalesArray, 1)
 const scalesStorage = storage(scalesAttribute, 'float', COUNT)
 
+const colorsArray = new Float32Array(COUNT * 3)
+const colorsAttribute = new StorageInstancedBufferAttribute(colorsArray, 3)
+const colorsStorage = storage(colorsAttribute, 'vec3', COUNT)
+
 export const computeInit = Fn(() => {
   const idx = float(instanceIndex)
 
@@ -47,6 +53,8 @@ export const computeInit = Fn(() => {
     hash(idx.add(262)).remap(0, 1, 0, PI)
   )
   rotationsStorage.element(idx).assign(rotation)
+
+  colorsStorage.element(idx).assign(colorA)
 })().compute(COUNT)
 
 export const computeUpdate = Fn(() => {
@@ -63,7 +71,9 @@ export const computeUpdate = Fn(() => {
     origin.assign(emitterPosition.add(vec3(x, 0, z)))
   })
   lastLife.assign(particleLife)
-  position.assign(origin.add(vec3(0, particleLife, 0)))
+
+  const newPosition = direction.normalize().mul(particleLife)
+  position.assign(origin.add(newPosition))
 
   const particleScale = particleLife.remap(0, 0.4, 0.2, 1).min(1)
   particleScale.mulAssign(particleLife.remap(1.65, 2, 1, 0).min(1))
@@ -71,6 +81,9 @@ export const computeUpdate = Fn(() => {
 
   const rotation = rotationsStorage.element(idx)
   rotation.addAssign(deltaTime)
+
+  const color = mix(colorA, colorB, particleLife.remap(0, life, 0, 1))
+  colorsStorage.element(idx).assign(color)
 })().compute(COUNT)
 
 ParticlesMaterial.positionNode = Fn(() => {
@@ -85,4 +98,6 @@ ParticlesMaterial.positionNode = Fn(() => {
   return modelWorldMatrixInverse.mul(worldPosition).xyz
 })()
 
-ParticlesMaterial.colorNode = uv()
+ParticlesMaterial.colorNode = Fn(() => {
+  return colorsStorage.element(instanceIndex)
+})()
