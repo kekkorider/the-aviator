@@ -4,6 +4,7 @@ import { PhysicsModule } from './webgl/modules/Physics'
 import { InspectorModule } from './webgl/modules/Inspector'
 import { InputModule } from './webgl/modules/Input'
 import { GameModule } from './webgl/modules/Game'
+import { UIModule } from './webgl/modules/UI'
 
 declare module "three-start" {
   interface ThreeStartRegister {
@@ -14,6 +15,7 @@ declare module "three-start" {
       inspector: InspectorModule
       input: InputModule
       game: GameModule
+      ui: UIModule
     }
   }
 }

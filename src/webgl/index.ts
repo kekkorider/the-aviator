@@ -17,8 +17,6 @@ import {
 import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
 
-import { animateInMainTitle } from '../assets/js/animations'
-
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
@@ -37,6 +35,7 @@ import { PhysicsModule } from './modules/Physics'
 // import { InspectorModule } from './modules/Inspector'
 import { InputModule } from './modules/Input'
 import { GameModule } from './modules/Game'
+import { UIModule } from './modules/UI'
 
 import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
@@ -66,6 +65,7 @@ starter.addModules({
   // inspector: new InspectorModule(),
   input: new InputModule(),
   game: new GameModule(),
+  ui: new UIModule(),
 })
 
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
@@ -130,6 +130,7 @@ planet.visible = true
 plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
 plane.scale.set(0.6, 0.6, 0.6)
 plane.position.x = -1.5
+plane.position.y = 10
 plane.material = PlaneMaterial
 
 bomb = modules.assetLoader.getModel('game')?.scene.getObjectByName('Bomb') as THREE.Mesh
@@ -147,7 +148,8 @@ addComponent(planeBody, BodySphere, {
   radius: 0.25
 } as SphereBodyParams)
 
-addComponent(plane, PlaneControl)
+const planeControlComponent = addComponent(plane, PlaneControl)
+planeControlComponent.disable()
 
 const propeller = plane.getObjectByName('Propeller') as THREE.Mesh
 propeller.material = PropellerMaterial
@@ -337,5 +339,37 @@ function createPostProcessing(): void {
 }
 
 gsap.delayedCall(0.3, () => {
-  animateInMainTitle()
+  modules.ui.animateInMainTitle()
+})
+
+modules.ui.on('animateInMainTitle', () => {
+  const tl = gsap.timeline({
+    paused: true
+  })
+
+  tl.addLabel('start')
+  tl.fromTo(plane.position, {
+    y: 4,
+  },
+  {
+    y: 0,
+    duration: 1.6,
+    ease: 'back.out(1)',
+    overwrite: 'auto'
+  }, 'start')
+
+  tl.fromTo(plane.rotation, {
+    x: -Math.PI * 2,
+  }, {
+    x: 0,
+    duration: 1,
+    ease: 'back.out(1.7)',
+    overwrite: 'auto'
+  }, 'start+=0.3')
+
+  return tl.play()
+})
+
+modules.ui.on('animateOutMainTitle', () => {
+  planeControlComponent.enable()
 })
