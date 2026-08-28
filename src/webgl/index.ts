@@ -17,6 +17,8 @@ import {
 import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
 
+import { animateInMainTitle } from '../assets/js/animations'
+
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
@@ -261,7 +263,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   }
 }
 
-spawnCoins(5, Math.PI * 0.03, 11, 0, 2)
+// spawnCoins(5, Math.PI * 0.03, 11, 0, 2)
 
 //
 // Post-processing
@@ -333,3 +335,7 @@ function createPostProcessing(): void {
     }
   })
 }
+
+gsap.delayedCall(0.3, () => {
+  animateInMainTitle()
+})

@@ -1,12 +1,16 @@
 :root {
+	--red: #c06840;
+	--peach: #e8664a;
+	--blue: #7abfbf;
+	--orange: #e8a060;
+	--dirt-white: #f2ecd8;
 	--text: #6b6375;
 	--white: #f1f2f3;
 	--border: rgb(77, 77, 77);
 	--bg: #000;
 
-	--font-sans: 'Bungee', Roboto, sans-serif;
-	--font-heading: 'Bungee', Roboto, sans-serif;
-	--font-mono: ui-monospace, Consolas, monospace;
+	--font-heading: 'Outfit', sans-serif;
+	--font-button: 'Sora', sans-serif;
 
 	font-family: var(--font-sans);
 	line-height: 1;
@@ -25,6 +29,7 @@
 
 * {
 	box-sizing: border-box;
+	user-select: none;
 }
 
 body {
@@ -50,7 +55,16 @@ body {
 	}
 }
 
+#main-menu {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	z-index: 2;
+}
+
 #hud {
+	display: none;
 	z-index: 1;
 	pointer-events: none;
 	padding: 1rem;
