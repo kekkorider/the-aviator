@@ -32,4 +32,42 @@
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 	}
+
+	#hud-lives {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		background-color: var(--dirt-white);
+		border-radius: 1.25rem;
+		padding: 1rem 1.5rem;
+
+		svg {
+			width: 1.5rem;
+
+			path {
+				fill: var(--red);
+			}
+		}
+
+		&[data-lives='0'],
+		&[data-lives='1'],
+		&[data-lives='2'] {
+			svg:nth-child(3) {
+				opacity: 0.3;
+			}
+		}
+
+		&[data-lives='0'],
+		&[data-lives='1'] {
+			svg:nth-child(2) {
+				opacity: 0.3;
+			}
+		}
+
+		&[data-lives='0'] {
+			svg:nth-child(1) {
+				opacity: 0.3;
+			}
+		}
+	}
 }

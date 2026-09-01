@@ -13,6 +13,7 @@ type UIEvents = {
 export class UIModule extends ContextModule<UIEvents> {
   private scoreElem: HTMLDivElement | null = null
   private playButton: HTMLButtonElement | null = null
+  private livesCounter: HTMLDivElement | null = null
   private playButtonObserver: Observer | null = null
   private playButtonHoverTween: gsap.core.Tween | null = null
 
@@ -21,11 +22,18 @@ export class UIModule extends ContextModule<UIEvents> {
 
     this.scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
+    this.livesCounter = document.getElementById('hud-lives') as HTMLDivElement
 
     this.createPlayButtonHoverTween()
   }
 
   onAwake() {
+    const formatter = new Intl.NumberFormat('en-US')
+
+    function formatPadded(num: number): string {
+      return formatter.format(num + 100_000_000).padStart(8, '0').replace('1', '')
+    }
+
     this.modules.game.on('scoreChanged', (currScore: number, prevScore: number) => {
       const score = { value: prevScore }
 
@@ -41,13 +49,9 @@ export class UIModule extends ContextModule<UIEvents> {
       })
     })
 
-    function formatPadded(num: number): string {
-      // Ensure a non-negative integer, pad to 8 digits, then group with commas
-      const padded = Math.trunc(Math.abs(num)).toString().padStart(8, '0')
-      const withCommas = padded.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-
-      return num < 0 ? `-${withCommas}` : withCommas
-    }
+    this.modules.game.on('livesChanged', (lives: number, _prevLives: number) => {
+      this.livesCounter!.setAttribute('data-lives', lives.toString())
+    })
   }
 
   animateInMainTitle = () => {

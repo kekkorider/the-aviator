@@ -4,12 +4,15 @@ type GameEvents = {
   scoreChanged: [currScore: number, prevScore: number]
   levelChanged: [level: number]
   levelProgressChanged: [levelProgress: number]
+  livesChanged: [lives: number, prevLives: number]
+  gameOver: []
 }
 
 export class GameModule extends ContextModule<GameEvents> {
   private score: number = 0
   private level: number = 1
   private levelProgress: number = 0
+  private lives: number = 3
 
   addScore(score: number): void {
     const prevScore = this.score
@@ -58,5 +61,31 @@ export class GameModule extends ContextModule<GameEvents> {
 
   getLevel(): number {
     return this.level
+  }
+
+  addLives(lives: number): void {
+    const prevLives = this.lives
+    this.lives = Math.max(0, this.lives + lives)
+    this.emit('livesChanged', this.lives, prevLives)
+
+    this.checkGameOver()
+  }
+
+  setLives(lives: number): void {
+    const prevLives = this.lives
+    this.lives = lives
+    this.emit('livesChanged', this.lives, prevLives)
+
+    this.checkGameOver()
+  }
+
+  getLives(): number {
+    return this.lives
+  }
+
+  private checkGameOver(): void {
+    if (this.lives <= 0) {
+      this.emit('gameOver')
+    }
   }
 }
