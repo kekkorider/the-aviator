@@ -1,7 +1,7 @@
 import { ContextModule } from "three-start"
 
 type GameEvents = {
-  scoreChanged: [score: number]
+  scoreChanged: [currScore: number, prevScore: number]
   levelChanged: [level: number]
   levelProgressChanged: [levelProgress: number]
 }
@@ -12,13 +12,15 @@ export class GameModule extends ContextModule<GameEvents> {
   private levelProgress: number = 0
 
   addScore(score: number): void {
+    const prevScore = this.score
     this.score = Math.max(0, this.score + score)
-    this.emit('scoreChanged', this.score)
+    this.emit('scoreChanged', this.score, prevScore)
   }
 
   setScore(score: number): void {
+    const prevScore = this.score
     this.score = score
-    this.emit('scoreChanged', this.score)
+    this.emit('scoreChanged', this.score, prevScore)
   }
 
   getScore(): number {

@@ -330,25 +330,25 @@ function createPostProcessing(): void {
   renderPipeline.outputNode = outputNode()
 }
 
-const scoreElem = document.getElementById('score') as HTMLDivElement
-const scaleScoreTween = gsap.fromTo(scoreElem,
-  { scale: 1, rotation: 0 },
-  {
-    scale: 1.1,
-    rotation: () => gsap.utils.random(-10, 10),
-    duration: 0.08,
-    repeat: 1,
-    yoyo: true,
-    ease: 'none',
-    overwrite: true,
-    paused: true
-  }
-)
+// const scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
+// const scaleScoreTween = gsap.fromTo(scoreElem,
+//   { scale: 1, rotation: 0 },
+//   {
+//     scale: 1.1,
+//     rotation: () => gsap.utils.random(-10, 10),
+//     duration: 0.08,
+//     repeat: 1,
+//     yoyo: true,
+//     ease: 'none',
+//     overwrite: true,
+//     paused: true
+//   }
+// )
 
-modules.game.on('scoreChanged', (score: number): void => {
-  scoreElem.textContent = score.toString().padStart(3, '0')
-  scaleScoreTween.invalidate().restart()
-})
+// modules.game.on('scoreChanged', (score: number): void => {
+//   scoreElem.textContent = score.toString().padStart(3, '0')
+//   scaleScoreTween.invalidate().restart()
+// })
 
 modules.game.on('levelProgressChanged', (levelProgress: number): void => {
   const amount = (planetRotationComponent!.getInitialSpeed() + (modules.game.getLevel() - 1) * 0.06 + levelProgress * 0.11).toFixed(3)
@@ -370,7 +370,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
     destroyComponent(bodyComponent as Body)
     parent!.removeFromParent()
 
-    modules.game.addScore(1)
+    modules.game.addScore(350)
     modules.game.addLevelProgress(0.1)
   }
 

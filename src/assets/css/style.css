@@ -54,25 +54,3 @@ body {
 		z-index: 0;
 	}
 }
-
-#main-menu {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	z-index: 2;
-}
-
-#hud {
-	display: none;
-	z-index: 1;
-	pointer-events: none;
-	padding: 1rem;
-}
-
-#score {
-	font-size: 4rem;
-	color: var(--white);
-	display: inline-block;
-	-webkit-text-stroke: round(up, 0.05em, 1px) var(--border);
-}

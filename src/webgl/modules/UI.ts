@@ -11,6 +11,7 @@ type UIEvents = {
 }
 
 export class UIModule extends ContextModule<UIEvents> {
+  private scoreElem: HTMLDivElement | null = null
   private playButton: HTMLButtonElement | null = null
   private playButtonObserver: Observer | null = null
   private playButtonHoverTween: gsap.core.Tween | null = null
@@ -18,9 +19,35 @@ export class UIModule extends ContextModule<UIEvents> {
   constructor() {
     super()
 
+    this.scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
 
     this.createPlayButtonHoverTween()
+  }
+
+  onAwake() {
+    this.modules.game.on('scoreChanged', (currScore: number, prevScore: number) => {
+      const score = { value: prevScore }
+
+      gsap.to(score, {
+        value: currScore,
+        snap: 'value',
+        duration: 0.5,
+        ease: 'power2.out',
+        overwrite: true,
+        onUpdate: () => {
+          this.scoreElem!.textContent = formatPadded(score.value)
+        }
+      })
+    })
+
+    function formatPadded(num: number): string {
+      // Ensure a non-negative integer, pad to 8 digits, then group with commas
+      const padded = Math.trunc(Math.abs(num)).toString().padStart(8, '0')
+      const withCommas = padded.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
+      return num < 0 ? `-${withCommas}` : withCommas
+    }
   }
 
   animateInMainTitle = () => {

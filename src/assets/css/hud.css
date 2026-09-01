@@ -1,0 +1,35 @@
+#hud {
+	padding: 3rem 4rem;
+	z-index: 1;
+
+	#hud-top-bar {
+		color: var(--red);
+		font-family: var(--font-button);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	#hud-score {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		background-color: var(--dirt-white);
+		padding: 1rem 1.5rem;
+		text-align: left;
+		gap: 0.25rem;
+		border-radius: 1.25rem;
+	}
+
+	#hud-score-label {
+		font-size: 0.6rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	#hud-score-value {
+		font-size: 2rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+}
