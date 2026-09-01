@@ -43,13 +43,16 @@ import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
 // import { TransformControl } from './behaviors/TransformControl'
 
+import { BodyBox, type BodyParams as BoxBodyParams } from './behaviors/physics/BodyBox'
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
 
-import type { RigidBodySettings } from 'crashcat'
+import type { RigidBody, RigidBodySettings } from 'crashcat'
 
 type PickupUserData = {
   isCoin: boolean
-  isBomb: boolean
+  isBomb: boolean,
+  isWall: boolean,
+  isPlane: boolean,
   object: THREE.Object3D
 }
 
@@ -108,7 +111,7 @@ bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
 //
 camera.position.z = 5
 
-camera.position.x = 1
+camera.position.x = 0
 camera.position.y = 1
 
 camera.lookAt(0, 0, 0)
@@ -120,7 +123,7 @@ const planetGeometry = new THREE.IcosahedronGeometry(10, 14)
 const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
 planet.name = 'Planet'
 planet.position.set(0, -12, 0)
-addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
+const planetRotationComponent = addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
 scene.add(planet)
 planet.visible = true
 
@@ -142,11 +145,18 @@ const planeBody = new THREE.Object3D()
 planeBody.name = 'PlaneBody'
 plane.add(planeBody)
 
-addComponent(planeBody, BodySphere, {
+const planeBodyComponent = addComponent(planeBody, BodySphere, {
   motionType: MotionType.KINEMATIC,
 } as RigidBodySettings, {
   radius: 0.25
 } as SphereBodyParams)
+
+requestAnimationFrame(() => {
+  planeBodyComponent!.body!.userData = {
+    isPlane: true,
+    object: planeBody
+  } as object
+})
 
 const planeControlComponent = addComponent(plane, PlaneControl)
 planeControlComponent.disable()
@@ -170,6 +180,33 @@ const coinInner = new THREE.Mesh(coinGeometry, coinMaterial)
 coinInner.name = 'CoinInner'
 
 coin.add(coinInner)
+
+//
+// Left wall
+//
+{
+  const geometry = new THREE.BoxGeometry(10, 0.5, 2)
+  const material = new THREE.MeshNormalNodeMaterial()
+  const mesh = new THREE.Mesh(geometry, material)
+  mesh.position.set(-13, -12, 0)
+  mesh.name = 'LeftWall'
+  mesh.visible = false
+  scene.add(mesh)
+
+  const bodyComponent = addComponent(mesh, BodyBox, {
+    motionType: MotionType.KINEMATIC,
+    sensor: true,
+  } as RigidBodySettings, {
+    width: 10.02,
+    height: 0.52,
+    depth: 2.02,
+  } as BoxBodyParams)
+
+  bodyComponent!.body!.userData = {
+    isWall: true,
+    object: mesh
+  } as object
+}
 
 //
 // Particles
@@ -255,17 +292,15 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 
   if (spawnAfter) {
     gsap.delayedCall(spawnAfter, () => {
-      const angle = -(planet.rotation.z % (Math.PI * 2)) - Math.PI / 2
+      const angle = -(planet.rotation.z % (Math.PI * 2))
       const amount = gsap.utils.random(3, 6)
       const radius = gsap.utils.random(11, 14)
-      const spawnAfter = gsap.utils.random(2, 4)
+      const spawnAfter = gsap.utils.random(2.5, 5)
 
       spawnCoins(amount, Math.PI * 0.03, radius, angle, spawnAfter)
     })
   }
 }
-
-// spawnCoins(5, Math.PI * 0.03, 11, 0, 2)
 
 //
 // Post-processing
@@ -293,53 +328,69 @@ function createPostProcessing(): void {
   })
 
   renderPipeline.outputNode = outputNode()
-
-  const scoreElem = document.getElementById('score') as HTMLDivElement
-  const scaleScoreTween = gsap.fromTo(scoreElem,
-    { scale: 1, rotation: 0 },
-    {
-      scale: 1.1,
-      rotation: () => gsap.utils.random(-10, 10),
-      duration: 0.08,
-      repeat: 1,
-      yoyo: true,
-      ease: 'none',
-      overwrite: true,
-      paused: true
-    }
-  )
-  modules.game.on('scoreChanged', (score) => {
-    scoreElem.textContent = score.toString().padStart(3, '0')
-    scaleScoreTween.invalidate().restart()
-  })
-
-  modules.physics.on('contactAdded', (_bodyA, bodyB) => {
-    const userData = bodyB.userData as PickupUserData
-
-    if (userData.isCoin) {
-      const bodyComponent = getComponent(userData.object, Body)
-      const parent = bodyComponent!.object.parent
-
-      destroyComponent(bodyComponent as Body)
-      parent!.removeFromParent()
-
-      modules.game.addScore(1)
-    }
-
-    if (userData.isBomb) {
-      const bodyComponent = getComponent(userData.object, Body)
-      const parent = bodyComponent!.object.parent
-
-      destroyComponent(bodyComponent as Body)
-      parent!.removeFromParent()
-
-      modules.game.addScore(-5)
-    }
-  })
 }
 
-gsap.delayedCall(0.3, () => {
-  modules.ui.animateInMainTitle()
+const scoreElem = document.getElementById('score') as HTMLDivElement
+const scaleScoreTween = gsap.fromTo(scoreElem,
+  { scale: 1, rotation: 0 },
+  {
+    scale: 1.1,
+    rotation: () => gsap.utils.random(-10, 10),
+    duration: 0.08,
+    repeat: 1,
+    yoyo: true,
+    ease: 'none',
+    overwrite: true,
+    paused: true
+  }
+)
+
+modules.game.on('scoreChanged', (score: number): void => {
+  scoreElem.textContent = score.toString().padStart(3, '0')
+  scaleScoreTween.invalidate().restart()
+})
+
+modules.game.on('levelProgressChanged', (levelProgress: number): void => {
+  const amount = (planetRotationComponent!.getInitialSpeed() + (modules.game.getLevel() - 1) * 0.06 + levelProgress * 0.11).toFixed(3)
+  planetRotationComponent!.tweenSpeed(parseFloat(amount))
+})
+
+modules.game.on('levelChanged', (_level: number) => {
+  // planetRotationComponent!.resetSpeed(1)
+})
+
+modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void => {
+  const userDataA = bodyA.userData as PickupUserData
+  const userDataB = bodyB.userData as PickupUserData
+
+  if (userDataA.isPlane && userDataB.isCoin) {
+    const bodyComponent = getComponent(userDataB.object, Body)
+    const parent = bodyComponent!.object.parent
+
+    destroyComponent(bodyComponent as Body)
+    parent!.removeFromParent()
+
+    modules.game.addScore(1)
+    modules.game.addLevelProgress(0.1)
+  }
+
+  if (userDataA.isPlane && userDataB.isBomb) {
+    const bodyComponent = getComponent(userDataB.object, Body)
+    const parent = bodyComponent!.object.parent
+
+    destroyComponent(bodyComponent as Body)
+    parent!.removeFromParent()
+
+    modules.game.addScore(-5)
+  }
+
+  if (userDataA.isWall) {
+    const bodyComponent = getComponent(userDataB.object, Body)
+    const parent = bodyComponent!.object.parent
+
+    destroyComponent(bodyComponent as Body)
+    parent!.removeFromParent()
+  }
 })
 
 modules.ui.on('animateInMainTitle', () => {
@@ -372,4 +423,9 @@ modules.ui.on('animateInMainTitle', () => {
 
 modules.ui.on('animateOutMainTitle', () => {
   planeControlComponent.enable()
+  spawnCoins(5, Math.PI * 0.03, 11, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3)
+})
+
+gsap.delayedCall(0.3, () => {
+  modules.ui.animateInMainTitle()
 })

@@ -1,4 +1,5 @@
 import { Object3DBehaviour } from "three-start"
+import gsap from 'gsap'
 
 type Params = {
   axis?: 'x' | 'y' | 'z'
@@ -10,6 +11,7 @@ export class Spin extends Object3DBehaviour {
   speed?: Params['speed']
 
   private _initialRotation: number = 0
+  private _initialSpeed: number = 0
 
   constructor(params?: Params) {
       super()
@@ -20,6 +22,7 @@ export class Spin extends Object3DBehaviour {
 
   onAwake() {
     this._initialRotation = this.object.rotation[this.axis!]
+    this._initialSpeed = this.speed!
   }
 
   onUpdate() {
@@ -29,5 +32,27 @@ export class Spin extends Object3DBehaviour {
 
   onDestroy() {
     this.object.rotation[this.axis!] = this._initialRotation
+  }
+
+  getInitialSpeed(): number {
+    return this._initialSpeed
+  }
+
+  tweenSpeed(speed: number, duration: number = 0.5): void {
+    gsap.to(this, {
+      speed,
+      duration,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
+  }
+
+  resetSpeed(duration: number = 0.5): void {
+    gsap.to(this, {
+      speed: this._initialSpeed,
+      duration,
+      ease: 'power2.out',
+      overwrite: 'auto'
+    })
   }
 }

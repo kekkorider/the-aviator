@@ -4,6 +4,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 3rem;
+	pointer-events: none;
 }
 
 #main-menu-heading {
@@ -66,6 +67,7 @@
 	text-transform: uppercase;
 	font-family: var(--font-button);
 	cursor: pointer;
+	pointer-events: auto;
 
 	svg {
 		width: 0.8em;

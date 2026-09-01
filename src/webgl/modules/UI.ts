@@ -6,7 +6,7 @@ import { Observer } from 'gsap/Observer'
 gsap.registerPlugin(SplitText, Observer)
 
 type UIEvents = {
-  animateInMainTitle: [],
+  animateInMainTitle: []
   animateOutMainTitle: []
 }
 
@@ -20,7 +20,6 @@ export class UIModule extends ContextModule<UIEvents> {
 
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
 
-    this.createPlayButtonObserver()
     this.createPlayButtonHoverTween()
   }
 
@@ -122,8 +121,10 @@ export class UIModule extends ContextModule<UIEvents> {
       ease: 'elastic.out(1, 0.6)',
       visibility: 'visible',
       onStart: () => {
+        this.playButton!.removeAttribute('disabled')
+        this.createPlayButtonObserver()
         this.emit('animateInMainTitle')
-      }
+      },
     }, 'animateInPlayButton')
 
     return tl.play()
