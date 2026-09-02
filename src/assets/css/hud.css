@@ -1,8 +1,12 @@
 #hud {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto 1fr auto;
 	padding: 3rem 4rem;
 	z-index: 1;
 
 	#hud-top-bar {
+		grid-area: 1 / 1 / 2 / 2;
 		color: var(--red);
 		font-family: var(--font-button);
 		display: flex;
@@ -68,6 +72,43 @@
 			svg:nth-child(1) {
 				opacity: 0.3;
 			}
+		}
+	}
+
+	#hud-bottom-bar {
+		grid-area: 3 / 1 / 4 / 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	#level-progress {
+		display: flex;
+		border-radius: 9999px;
+		padding: 0.75rem;
+		background-color: var(--dirt-white);
+		width: clamp(10rem, 50vw, 50rem);
+	}
+
+	#level-progress-inner {
+		background-color: #d8ccbc;
+		border-radius: 9999px;
+		height: 1.25rem;
+		width: 100%;
+		overflow: clip;
+
+		&::before {
+			--color-a: color-mix(in oklab, var(--blue), black 12%);
+			--color-b: color-mix(in oklab, var(--blue), black 0%);
+
+			display: block;
+			content: '';
+			background-image: linear-gradient(to top, var(--color-a), var(--color-b));
+			height: 100%;
+			transform-origin: left center;
+			translate: calc(-100% + var(--progress, 0) * 100%) 0;
+			border-radius: inherit;
+			transition: translate 0.2s ease-out;
 		}
 	}
 }

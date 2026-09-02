@@ -367,6 +367,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
 
     modules.game.addScore(-500)
     modules.game.addLives(-1)
+    modules.game.setLevelProgress(0)
   }
 
   if (userDataA.isWall) {

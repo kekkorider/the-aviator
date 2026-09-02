@@ -16,6 +16,7 @@ export class UIModule extends ContextModule<UIEvents> {
   private livesCounter: HTMLDivElement | null = null
   private playButtonObserver: Observer | null = null
   private playButtonHoverTween: gsap.core.Tween | null = null
+  private levelProgress: HTMLDivElement | null = null
 
   constructor() {
     super()
@@ -23,6 +24,7 @@ export class UIModule extends ContextModule<UIEvents> {
     this.scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
     this.livesCounter = document.getElementById('hud-lives') as HTMLDivElement
+    this.levelProgress = document.getElementById('level-progress-inner') as HTMLDivElement
 
     this.createPlayButtonHoverTween()
   }
@@ -51,6 +53,10 @@ export class UIModule extends ContextModule<UIEvents> {
 
     this.modules.game.on('livesChanged', (lives: number, _prevLives: number) => {
       this.livesCounter!.setAttribute('data-lives', lives.toString())
+    })
+
+    this.modules.game.on('levelProgressChanged', (progress: number) => {
+      this.levelProgress!.style.setProperty('--progress', progress.toString())
     })
   }
 
