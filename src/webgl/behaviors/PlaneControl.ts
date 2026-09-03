@@ -57,7 +57,7 @@ export class PlaneControl extends Object3DBehaviour {
     tl.addLabel('start')
 
     tl.to(this.object.position, {
-      y: '+=0.8',
+      y: '+=0.65',
       duration: 0.6,
       ease: 'power1.out'
     }, 'start')

@@ -226,7 +226,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   for (i = 0; i < amount; i++) {
     rng = Math.random()
 
-    if (rng > 0.1 * 10) {
+    if (rng > 0.1) {
       const clone = coin.clone(true)
       const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
 

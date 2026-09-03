@@ -88,6 +88,7 @@
 		padding: 0.75rem;
 		background-color: var(--dirt-white);
 		width: clamp(10rem, 50vw, 50rem);
+		position: relative;
 	}
 
 	#level-progress-inner {
@@ -109,6 +110,35 @@
 			translate: calc(-100% + var(--progress, 0) * 100%) 0;
 			border-radius: inherit;
 			transition: translate 0.2s ease-out;
+		}
+	}
+
+	#level-indicator {
+		border-radius: 1rem;
+		background-color: var(--orange);
+		color: var(--dirt-white);
+		padding: 0.7rem 1rem;
+		font-family: var(--font-button);
+		text-transform: uppercase;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		font-weight: 800;
+		gap: 0.3rem;
+		position: absolute;
+		bottom: calc(100% + 0.65rem);
+		left: 0.75rem;
+		translate: -50% 0;
+		transform-origin: center bottom;
+
+		#level-indicator-label {
+			font-size: 0.65rem;
+		}
+
+		#level-indicator-value {
+			font-size: 2rem;
 		}
 	}
 }

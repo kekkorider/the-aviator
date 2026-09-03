@@ -1,4 +1,4 @@
-import { ContextModule } from "three-start"
+import { ContextModule, ThreeContextEvents } from "three-start"
 import { gsap } from 'gsap'
 import { SplitText } from 'gsap/SplitText'
 import { Observer } from 'gsap/Observer'
@@ -17,6 +17,10 @@ export class UIModule extends ContextModule<UIEvents> {
   private playButtonObserver: Observer | null = null
   private playButtonHoverTween: gsap.core.Tween | null = null
   private levelProgress: HTMLDivElement | null = null
+  private levelProgressInner: HTMLDivElement | null = null
+  private levelIndicator: HTMLDivElement | null = null
+  private levelIndicatorValue: HTMLDivElement | null = null
+  private progressBarBoundingBox: DOMRect | null = null
 
   constructor() {
     super()
@@ -24,7 +28,10 @@ export class UIModule extends ContextModule<UIEvents> {
     this.scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
     this.livesCounter = document.getElementById('hud-lives') as HTMLDivElement
-    this.levelProgress = document.getElementById('level-progress-inner') as HTMLDivElement
+    this.levelProgress = document.getElementById('level-progress') as HTMLDivElement
+    this.levelProgressInner = document.getElementById('level-progress-inner') as HTMLDivElement
+    this.levelIndicator = document.getElementById('level-indicator') as HTMLDivElement
+    this.levelIndicatorValue = document.getElementById('level-indicator-value') as HTMLDivElement
 
     this.createPlayButtonHoverTween()
   }
@@ -55,9 +62,23 @@ export class UIModule extends ContextModule<UIEvents> {
       this.livesCounter!.setAttribute('data-lives', lives.toString())
     })
 
+    this.modules.game.on('levelChanged', (level: number) => {
+      this.levelIndicatorValue!.textContent = level.toString()
+    })
+
     this.modules.game.on('levelProgressChanged', (progress: number) => {
       this.levelProgress!.style.setProperty('--progress', progress.toString())
+
+      gsap.to(this.levelIndicator, {
+        x: progress * this.progressBarBoundingBox!.width,
+        xPercent: -50,
+        overwrite: true,
+        duration: 0.3,
+        delay: 0.05
+      })
     })
+
+    this.ctx.on(ThreeContextEvents.Resized, this.handleResize.bind(this))
   }
 
   animateInMainTitle = () => {
@@ -239,5 +260,9 @@ export class UIModule extends ContextModule<UIEvents> {
       ease: 'elastic.out(1, 0.3)',
       easeReverse: 'power2.out',
     })
+  }
+
+  private handleResize(): void {
+    this.progressBarBoundingBox = this.levelProgressInner!.getBoundingClientRect()
   }
 }
