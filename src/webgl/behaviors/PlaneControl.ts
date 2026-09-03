@@ -1,7 +1,9 @@
 import * as THREE from 'three/webgpu'
-import { Object3DBehaviour, ThreeContextEvents } from "three-start"
+import { Object3DBehaviour, ThreeContextEvents, getComponent } from "three-start"
 import gsap from 'gsap'
 import { Observer } from "gsap/Observer"
+import { MotionType } from 'crashcat'
+import { Body } from './physics/Body'
 
 gsap.registerPlugin(Observer)
 
@@ -13,13 +15,18 @@ export class PlaneControl extends Object3DBehaviour {
   cursorY: number = 0
   cameraPositionOriginal: THREE.Vector3 = new THREE.Vector3()
   rotateXTween: gsap.core.Tween | null = null
+  bodyComponent: Body | null = null
 
   private _updateViewport: Function = () => {}
+  private _originalBodyMotionType: MotionType = MotionType.STATIC
 
   onAwake() {
     this.cameraPositionOriginal.copy(this.ctx.camera.position)
 
     this._updateViewport = this.updateViewport.bind(this)
+
+    this.bodyComponent = getComponent(this.object.getObjectByName('PlaneBody')!, Body)
+    this._originalBodyMotionType = this.bodyComponent!.body!.motionType
 
     this.createMouseControl()
     this.createRotateXTween()
@@ -31,6 +38,63 @@ export class PlaneControl extends Object3DBehaviour {
 
   onUpdate() {
     this.object.rotation.z *= 0.975
+  }
+
+  onEnable(): void {
+    this.observer?.enable()
+    this.bodyComponent!.body!.motionType = this._originalBodyMotionType
+  }
+
+  onDisable(): void {
+    this.observer?.disable()
+    gsap.killTweensOf(this.object)
+    this.bodyComponent!.body!.motionType = MotionType.STATIC
+  }
+
+  die(): void {
+    const tl = gsap.timeline()
+    tl.timeScale(1.1)
+    tl.addLabel('start')
+
+    tl.to(this.object.position, {
+      y: '+=0.8',
+      duration: 0.6,
+      ease: 'power1.out'
+    }, 'start')
+
+    tl.addLabel('fall', '>0.05')
+    tl.to(this.object.position, {
+      y: '-=6',
+      duration: 1,
+      ease: 'power2.in'
+    }, 'fall')
+
+    tl.to(this.object.position, {
+      x: '+=1.2',
+      duration: 1.5,
+      ease: 'none'
+    }, 'start')
+
+    tl.to(this.object.rotation, {
+      z: Math.PI * 0.25,
+      duration: 0.5,
+      ease: 'power1.out',
+      overwrite: 'auto'
+    }, 'start')
+
+    tl.to(this.object.rotation, {
+      x: () => gsap.utils.random([-0.6, 0.6]),
+      duration: 1,
+      ease: 'power1.out',
+      overwrite: 'auto'
+    }, 'start')
+
+    tl.to(this.object.rotation, {
+      z: Math.PI * -0.25,
+      duration: 0.85,
+      ease: 'power1.in',
+      overwrite: 'auto'
+    }, 'fall')
   }
 
   private updateViewport() {
@@ -62,8 +126,8 @@ export class PlaneControl extends Object3DBehaviour {
     )
 
     const targetY = gsap.utils.pipe(
-      gsap.utils.clamp(-1, 1),
-      gsap.utils.mapRange(-1, 1, -1.5, 2.1)
+      gsap.utils.clamp(-0.75, 0.75),
+      gsap.utils.mapRange(-0.75, 0.75, -1.5, 2.1)
     )
 
     const targetYCamera = gsap.utils.pipe(
@@ -112,6 +176,9 @@ export class PlaneControl extends Object3DBehaviour {
       paused: true,
       x: () => {
         return Math.PI * 2 * Math.sign(Math.random() - 0.5)
+      },
+      onComplete: () => {
+        this.object.rotation.x = 0
       },
       duration: 1.2,
       overwrite: 'auto',

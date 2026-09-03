@@ -32,9 +32,9 @@ export class UIModule extends ContextModule<UIEvents> {
   onAwake() {
     const formatter = new Intl.NumberFormat('en-US')
 
-    function formatPadded(num: number): string {
-      return formatter.format(num + 100_000_000).padStart(8, '0').replace('1', '')
-    }
+    // function formatPadded(num: number): string {
+    //   return formatter.format(num + 100_000_000).padStart(8, '0').replace('1', '')
+    // }
 
     this.modules.game.on('scoreChanged', (currScore: number, prevScore: number) => {
       const score = { value: prevScore }
@@ -46,7 +46,7 @@ export class UIModule extends ContextModule<UIEvents> {
         ease: 'power2.out',
         overwrite: true,
         onUpdate: () => {
-          this.scoreElem!.textContent = formatPadded(score.value)
+          this.scoreElem!.textContent = formatter.format(score.value)
         }
       })
     })

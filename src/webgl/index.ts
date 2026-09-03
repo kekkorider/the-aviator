@@ -109,11 +109,7 @@ bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
 //
 // Camera
 //
-camera.position.z = 5
-
-camera.position.x = 0
-camera.position.y = 1
-
+camera.position.set(0, 1, 5)
 camera.lookAt(0, 0, 0)
 
 //
@@ -214,6 +210,7 @@ coin.add(coinInner)
 const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
 const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
 particles.position.set(-0.7, 0.1, 0)
+particles.frustumCulled = false
 particles.name = 'Particles'
 // addComponent(particles, TransformControl)
 plane.add(particles)
@@ -229,7 +226,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
   for (i = 0; i < amount; i++) {
     rng = Math.random()
 
-    if (rng > 0.1) {
+    if (rng > 0.1 * 10) {
       const clone = coin.clone(true)
       const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
 
@@ -340,13 +337,17 @@ modules.game.on('levelChanged', (_level: number) => {
 })
 
 modules.game.on('gameOver', () => {
-  console.log('game over')
+  planeControlComponent.disable()
+  planeBodyComponent.disable()
+
+  planeControlComponent.die()
 })
 
 modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void => {
   const userDataA = bodyA.userData as PickupUserData
   const userDataB = bodyB.userData as PickupUserData
 
+  // Collect coin
   if (userDataA.isPlane && userDataB.isCoin) {
     const bodyComponent = getComponent(userDataB.object, Body)
     const parent = bodyComponent!.object.parent
@@ -358,6 +359,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
     modules.game.addLevelProgress(0.1)
   }
 
+  // Hit bomb
   if (userDataA.isPlane && userDataB.isBomb) {
     const bodyComponent = getComponent(userDataB.object, Body)
     const parent = bodyComponent!.object.parent
@@ -370,6 +372,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
     modules.game.setLevelProgress(0)
   }
 
+  // Bomb and coins hit wall -> killed
   if (userDataA.isWall) {
     const bodyComponent = getComponent(userDataB.object, Body)
     const parent = bodyComponent!.object.parent
@@ -409,7 +412,7 @@ modules.ui.on('animateInMainTitle', () => {
 
 modules.ui.on('animateOutMainTitle', () => {
   planeControlComponent.enable()
-  spawnCoins(5, Math.PI * 0.03, 11, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3)
+  spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3)
 })
 
 gsap.delayedCall(0.3, () => {
