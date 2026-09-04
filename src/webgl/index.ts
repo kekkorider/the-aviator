@@ -411,6 +411,7 @@ modules.ui.on('animateInMainTitle', () => {
 })
 
 modules.ui.on('animateOutMainTitle', () => {
+  modules.ui.animateInHud()
   planeControlComponent.enable()
   spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3)
 })

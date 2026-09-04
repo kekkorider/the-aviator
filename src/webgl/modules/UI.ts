@@ -12,6 +12,7 @@ type UIEvents = {
 
 export class UIModule extends ContextModule<UIEvents> {
   private scoreElem: HTMLDivElement | null = null
+  private scoreValueElem: HTMLDivElement | null = null
   private playButton: HTMLButtonElement | null = null
   private livesCounter: HTMLDivElement | null = null
   private playButtonObserver: Observer | null = null
@@ -25,7 +26,8 @@ export class UIModule extends ContextModule<UIEvents> {
   constructor() {
     super()
 
-    this.scoreElem = document.getElementById('hud-score-value') as HTMLDivElement
+    this.scoreElem = document.getElementById('hud-score') as HTMLDivElement
+    this.scoreValueElem = document.getElementById('hud-score-value') as HTMLDivElement
     this.playButton = document.getElementById('main-menu-button-play') as HTMLButtonElement
     this.livesCounter = document.getElementById('hud-lives') as HTMLDivElement
     this.levelProgress = document.getElementById('level-progress') as HTMLDivElement
@@ -39,10 +41,6 @@ export class UIModule extends ContextModule<UIEvents> {
   onAwake() {
     const formatter = new Intl.NumberFormat('en-US')
 
-    // function formatPadded(num: number): string {
-    //   return formatter.format(num + 100_000_000).padStart(8, '0').replace('1', '')
-    // }
-
     this.modules.game.on('scoreChanged', (currScore: number, prevScore: number) => {
       const score = { value: prevScore }
 
@@ -53,7 +51,7 @@ export class UIModule extends ContextModule<UIEvents> {
         ease: 'power2.out',
         overwrite: true,
         onUpdate: () => {
-          this.scoreElem!.textContent = formatter.format(score.value)
+          this.scoreValueElem!.textContent = formatter.format(score.value)
         }
       })
     })
@@ -230,6 +228,63 @@ export class UIModule extends ContextModule<UIEvents> {
     }, '>-0.2')
 
     return tl.play()
+  }
+
+  animateInHud(): void {
+    const tl = gsap.timeline()
+    tl.addLabel('start')
+
+    tl.fromTo(this.scoreElem, {
+      visibility: 'hidden',
+      scale: 0.4
+    }, {
+      visibility: 'visible',
+      duration: 0.5,
+      scale: 1,
+      ease: 'back.out(4)',
+    }, 'start')
+
+    tl.addLabel('animateInLivesCounter', '<0.2')
+    tl.fromTo(this.livesCounter, {
+      visibility: 'hidden',
+      scale: 0.5
+    }, {
+      visibility: 'visible',
+      scale: 1,
+      duration: 0.5,
+      ease: 'back.out(3)',
+    }, 'animateInLivesCounter')
+
+    tl.fromTo(this.livesCounter!.querySelectorAll('svg'), {
+      autoAlpha: 0,
+      yPercent: 25,
+    }, {
+      autoAlpha: 1,
+      stagger: 0.08,
+      duration: 0.35,
+      yPercent: 0,
+      ease: 'back.out(10)',
+    }, 'animateInLivesCounter+=0.25')
+
+    tl.addLabel('animateInProgress', '<0.2')
+    tl.set(this.levelProgress, {
+      visibility: 'visible',
+    }, 'animateInProgress')
+    tl.from(this.levelProgress, {
+      width: 0,
+      duration: 0.7,
+      ease: 'back.out(3)',
+    }, 'animateInProgress')
+
+    tl.fromTo(this.levelIndicator, {
+      visibility: 'hidden',
+      rotation: -40
+    }, {
+      visibility: 'visible',
+      rotation: 0,
+      ease: 'back.out(6)',
+      duration: 0.6
+    }, '>-0.1')
   }
 
   private createPlayButtonObserver() {
