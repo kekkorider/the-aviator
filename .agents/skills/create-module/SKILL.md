@@ -1,5 +1,6 @@
 ---
 alwaysApply: false
+name: 'create-module'
 description: 'Create a new module using three-start.'
 ---
 

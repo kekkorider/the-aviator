@@ -1,5 +1,7 @@
 ---
 alwaysApply: true
+name: 'core'
+description: 'Core rules for the project.'
 ---
 
 - When specified the file must include animations or `gsap`, import it at the beginning of the file.

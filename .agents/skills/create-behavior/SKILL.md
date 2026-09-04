@@ -1,6 +1,7 @@
 ---
 alwaysApply: false
-description: 'Create a new behavior using three-start.'
+name: 'create-behavior'
+description: 'Create a new behavior/component using three-start.'
 ---
 
 1. Behaviors must be created in `src/webgl/behaviors`.
