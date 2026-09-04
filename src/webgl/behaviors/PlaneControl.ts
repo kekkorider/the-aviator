@@ -53,26 +53,29 @@ export class PlaneControl extends Object3DBehaviour {
 
   die(): void {
     const tl = gsap.timeline()
-    tl.timeScale(1.1)
+    tl.timeScale(1.2)
     tl.addLabel('start')
 
     tl.to(this.object.position, {
-      y: '+=0.65',
-      duration: 0.6,
-      ease: 'power1.out'
+      y: '+=0.75',
+      duration: 0.45,
+      ease: 'power1.out',
+      overwrite: 'auto'
     }, 'start')
 
     tl.addLabel('fall', '>0.05')
     tl.to(this.object.position, {
       y: '-=6',
       duration: 1,
-      ease: 'power2.in'
+      ease: 'power2.in',
+      overwrite: 'auto'
     }, 'fall')
 
     tl.to(this.object.position, {
       x: '+=1.2',
       duration: 1.5,
-      ease: 'none'
+      ease: 'none',
+      overwrite: 'auto'
     }, 'start')
 
     tl.to(this.object.rotation, {
@@ -83,18 +86,11 @@ export class PlaneControl extends Object3DBehaviour {
     }, 'start')
 
     tl.to(this.object.rotation, {
-      x: () => gsap.utils.random([-0.6, 0.6]),
-      duration: 1,
-      ease: 'power1.out',
+      x: () => 5,
+      duration: 1.3,
+      ease: 'none',
       overwrite: 'auto'
     }, 'start')
-
-    tl.to(this.object.rotation, {
-      z: Math.PI * -0.25,
-      duration: 0.85,
-      ease: 'power1.in',
-      overwrite: 'auto'
-    }, 'fall')
   }
 
   private updateViewport() {

@@ -177,10 +177,12 @@ export class UIModule extends ContextModule<UIEvents> {
       ease: 'elastic.out(1, 0.6)',
       visibility: 'visible',
       onStart: () => {
-        this.playButton!.removeAttribute('disabled')
-        this.createPlayButtonObserver()
         this.emit('animateInMainTitle')
       },
+      onComplete: () => {
+        this.playButton!.removeAttribute('disabled')
+        this.createPlayButtonObserver()
+      }
     }, 'animateInPlayButton')
 
     return tl.play()
@@ -255,15 +257,15 @@ export class UIModule extends ContextModule<UIEvents> {
       ease: 'back.out(3)',
     }, 'animateInLivesCounter')
 
-    tl.fromTo(this.livesCounter!.querySelectorAll('svg'), {
+    tl.from(this.livesCounter!.querySelectorAll('svg'), {
       autoAlpha: 0,
-      yPercent: 25,
-    }, {
-      autoAlpha: 1,
       stagger: 0.08,
       duration: 0.35,
-      yPercent: 0,
+      yPercent: 25,
       ease: 'back.out(10)',
+      onComplete: function() {
+        gsap.set(this.targets(), { clearProps: 'all' })
+      }
     }, 'animateInLivesCounter+=0.25')
 
     tl.addLabel('animateInProgress', '<0.2')
@@ -278,9 +280,11 @@ export class UIModule extends ContextModule<UIEvents> {
 
     tl.fromTo(this.levelIndicator, {
       visibility: 'hidden',
-      rotation: -40
+      rotation: -40,
+      scale: 0.8,
     }, {
       visibility: 'visible',
+      scale: 1,
       rotation: 0,
       ease: 'back.out(6)',
       duration: 0.6
