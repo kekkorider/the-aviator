@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+---
+
+- When specified the file must include animations or `gsap`, import it at the beginning of the file.
+- Default scripting language is TypeScript. In case I specify otherwise, use the specified language.

@@ -1,0 +1,28 @@
+---
+alwaysApply: false
+description: 'Create a new module using three-start.'
+---
+
+1. Behaviors must be created in `src/webgl/modules`.
+2. The filename must match exactly the name I give to you. If I don't provide a name, you must ask me for it.
+3. Component starting structure must be the following:
+
+```ts
+import { ContextModule } from 'three-start'
+
+// Add this dummy type ONLY if I tell you to add module events.
+type ModuleEvents = {
+	eventName: [eventData: any]
+}
+
+// Then include the module events in the type
+export class ModuleName extends ContextModule<ModuleEvents> {
+	onAwake() {}
+
+	onDestroy() {}
+
+	onUpdate() {}
+}
+```
+
+4. `ModuleName` must be the name of the module I provided you.

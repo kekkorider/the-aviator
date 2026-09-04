@@ -1,0 +1,24 @@
+---
+alwaysApply: false
+description: 'Create a new behavior using three-start.'
+---
+
+1. Behaviors must be created in `src/webgl/behaviors`.
+2. The filename must match exactly the name I give to you. If I don't provide a name, you must ask me for it.
+3. If I specify it's a physics behavior, create it in `src/webgl/behaviors/physics`.
+
+4. Component starting structure must be the following:
+
+```ts
+import { Object3DBehaviour } from 'three-start'
+
+export class BehaviorName extends Object3DBehaviour {
+	onAwake() {}
+
+	onDestroy() {}
+
+	onUpdate() {}
+}
+```
+
+5. `BehaviorName` must be the name of the behavior I provided you.
