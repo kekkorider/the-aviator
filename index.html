@@ -13,19 +13,20 @@
     <div id="app">
       <div id="main-menu" style="visibility: hidden;">
         <div id="main-menu-heading">
-          <h1 id="main-menu-title" class="font-heading">
+          <h1 id="main-menu-title" class="display-1 font-heading">
             <span>The Aviator</span>
             <span class="main-menu-title-pill" data-index="1" data-js-pill aria-hidden="true"></span>
             <span class="main-menu-title-pill" data-index="2" data-js-pill aria-hidden="true"></span>
             <span class="main-menu-title-pill" data-index="3" data-js-pill aria-hidden="true"></span>
           </h1>
+
           <span id="main-menu-subtitle" class="font-heading">
             <span id="main-menu-subtitle-copy">Remake</span>
           </span>
         </div>
 
         <div id="main-menu-buttons">
-          <button id="main-menu-button-play" style="transform: rotate(0.01deg)" disabled>
+          <button class="button-primary" id="main-menu-button-play" style="transform: rotate(0.01deg)" disabled>
             <span>Start game</span>
 
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -66,6 +67,18 @@
             <div id="level-progress-inner"></div>
           </div>
         </div>
+      </div>
+
+      <div id="game-over-screen" style="visibility: hidden">
+        <h1 class="display-1 font-heading" id="game-over-title">Game Over</h1>
+
+        <button class="button-primary" id="game-over-button" style="transform: rotate(0.01deg)" disabled>
+          <span>Retry</span>
+
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="#f2ecd8" stroke-linecap="round" stroke-width="2" d="M4.39 3.33q-.22.39-.22.84v11.66a1.67 1.67 0 0 0 2.5 1.44l10-5.83a1.67 1.67 0 0 0 0-2.88l-10-5.83a1.67 1.67 0 0 0-2.28.6Z"/>
+          </svg></button>
+      </div>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

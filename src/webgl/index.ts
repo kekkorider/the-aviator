@@ -341,6 +341,10 @@ modules.game.on('gameOver', () => {
   planeBodyComponent.disable()
 
   planeControlComponent.die()
+
+  gsap.delayedCall(0.6, () => {
+    modules.ui.animateInGameOverScreen()
+  })
 })
 
 modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void => {

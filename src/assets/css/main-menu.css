@@ -17,10 +17,8 @@
 }
 
 #main-menu-title {
-	font-size: clamp(2.5rem, 10vw, 6.5rem);
 	font-weight: 900;
 	color: var(--red);
-	font-family: var(--font-heading);
 	display: grid;
 	justify-items: center;
 	align-items: center;
@@ -49,30 +47,6 @@
 	align-items: center;
 	justify-content: center;
 	gap: 1rem;
-}
-
-#main-menu-button-play {
-	all: unset;
-
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5em;
-
-	font-size: clamp(0.8rem, 10vw, 1.5rem);
-	font-weight: 800;
-	color: var(--dirt-white);
-	background-color: var(--orange);
-	border-radius: 1.5em;
-	padding: 0.7em 1.8em;
-	text-transform: uppercase;
-	font-family: var(--font-button);
-	cursor: pointer;
-	pointer-events: auto;
-
-	svg {
-		width: 0.8em;
-	}
 }
 
 .main-menu-title-pill {

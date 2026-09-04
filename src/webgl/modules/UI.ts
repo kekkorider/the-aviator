@@ -10,18 +10,48 @@ type UIEvents = {
   animateOutMainTitle: []
 }
 
+type Elements = {
+  scoreElem: HTMLDivElement
+  scoreValueElem: HTMLDivElement
+
+  playButton: HTMLButtonElement
+  playButtonObserver: Observer
+  playButtonHoverTween: gsap.core.Tween
+
+  livesCounter: HTMLDivElement
+
+  levelProgress: HTMLDivElement
+  levelProgressInner: HTMLDivElement
+
+  levelIndicator: HTMLDivElement
+  levelIndicatorValue: HTMLDivElement
+
+  progressBarBoundingBox: DOMRect
+
+  gameOverScreen: HTMLElement
+  gameOverTitle: HTMLHeadingElement
+  gameOverButton: HTMLButtonElement
+  gameOverButtonObserver: Observer
+  gameOverButtonHoverTween: gsap.core.Tween
+}
+
 export class UIModule extends ContextModule<UIEvents> {
-  private scoreElem: HTMLDivElement | null = null
-  private scoreValueElem: HTMLDivElement | null = null
-  private playButton: HTMLButtonElement | null = null
-  private livesCounter: HTMLDivElement | null = null
-  private playButtonObserver: Observer | null = null
-  private playButtonHoverTween: gsap.core.Tween | null = null
-  private levelProgress: HTMLDivElement | null = null
-  private levelProgressInner: HTMLDivElement | null = null
-  private levelIndicator: HTMLDivElement | null = null
-  private levelIndicatorValue: HTMLDivElement | null = null
-  private progressBarBoundingBox: DOMRect | null = null
+  private scoreElem: Elements['scoreElem']
+  private scoreValueElem: Elements['scoreValueElem']
+  private playButton: Elements['playButton']
+  private playButtonObserver!: Elements['playButtonObserver']
+  private playButtonHoverTween!: Elements['playButtonHoverTween']
+  private livesCounter: Elements['livesCounter']
+  private levelProgress: Elements['levelProgress']
+  private levelProgressInner: Elements['levelProgressInner']
+  private levelIndicator: Elements['levelIndicator']
+  private levelIndicatorValue: Elements['levelIndicatorValue']
+  private progressBarBoundingBox!: Elements['progressBarBoundingBox']
+  private gameOverScreen: Elements['gameOverScreen']
+  private gameOverTitle: Elements['gameOverTitle']
+  private gameOverButton: Elements['gameOverButton']
+  private gameOverButtonObserver!: Elements['gameOverButtonObserver']
+  private gameOverButtonHoverTween!: Elements['gameOverButtonHoverTween']
 
   constructor() {
     super()
@@ -34,8 +64,12 @@ export class UIModule extends ContextModule<UIEvents> {
     this.levelProgressInner = document.getElementById('level-progress-inner') as HTMLDivElement
     this.levelIndicator = document.getElementById('level-indicator') as HTMLDivElement
     this.levelIndicatorValue = document.getElementById('level-indicator-value') as HTMLDivElement
+    this.gameOverScreen = document.getElementById('game-over-screen') as HTMLElement
+    this.gameOverTitle = document.getElementById('game-over-title') as HTMLHeadingElement
+    this.gameOverButton = document.getElementById('game-over-button') as HTMLButtonElement
 
-    this.createPlayButtonHoverTween()
+    this.createButtons()
+    this.handleResize()
   }
 
   onAwake() {
@@ -79,7 +113,7 @@ export class UIModule extends ContextModule<UIEvents> {
     this.ctx.on(ThreeContextEvents.Resized, this.handleResize.bind(this))
   }
 
-  animateInMainTitle = () => {
+  animateInMainTitle(): void {
     const tl = gsap.timeline({
       paused: true
     })
@@ -188,7 +222,7 @@ export class UIModule extends ContextModule<UIEvents> {
     return tl.play()
   }
 
-  animateOutMainTitle = () => {
+  animateOutMainTitle(): void {
     const tl = gsap.timeline({
       paused: true,
       onComplete: () => {
@@ -291,7 +325,35 @@ export class UIModule extends ContextModule<UIEvents> {
     }, '>-0.1')
   }
 
-  private createPlayButtonObserver() {
+  animateInGameOverScreen(): void {
+    const tl = gsap.timeline()
+    tl.addLabel('start')
+
+    tl.set(this.gameOverScreen, { clearProps: 'visibility' }, 'start')
+
+    tl.from(this.gameOverTitle, {
+      y: '-60vh',
+      duration: 1,
+      ease: 'bounce.out'
+    }, 'start')
+
+    tl.addLabel('animateInButton', '<0.8')
+    tl.fromTo(this.gameOverButton, {
+      visibility: 'hidden',
+      scale: 0.6,
+      rotation: -20
+    }, {
+      visibility: 'visible',
+      scale: 1,
+      rotation: 0,
+      duration: 1.2,
+      ease: 'elastic.out(1.3, 0.6)'
+    }, 'animateInButton')
+  }
+
+  animateOutGameOverScreen(): void {}
+
+  private createPlayButtonObserver(): void {
     this.playButtonObserver = Observer.create({
       target: this.playButton,
       onClick: () => {
@@ -308,10 +370,31 @@ export class UIModule extends ContextModule<UIEvents> {
         this.playButtonHoverTween?.reverse()
       }
     })
+
+    this.gameOverButtonObserver = Observer.create({
+      target: this.gameOverButton,
+      onClick: () => {
+        this.gameOverButtonObserver?.disable()
+      },
+      onHover: () => {
+        this.gameOverButtonHoverTween?.invalidate()
+        this.gameOverButtonHoverTween?.timeScale(1)
+        this.gameOverButtonHoverTween?.restart()
+      },
+      onHoverEnd: () => {
+        this.gameOverButtonHoverTween?.timeScale(1.5)
+        this.gameOverButtonHoverTween?.reverse()
+      }
+    })
   }
 
-  private createPlayButtonHoverTween() {
-    this.playButtonHoverTween = gsap.to(this.playButton, {
+  private createButtons(): void {
+    this.playButtonHoverTween = this.createButtonHoverTween(this.playButton!)
+    this.gameOverButtonHoverTween = this.createButtonHoverTween(this.gameOverButton!)
+  }
+
+  private createButtonHoverTween(target: HTMLButtonElement): gsap.core.Tween {
+    return gsap.to(target, {
       paused: true,
       scale: 1.1,
       rotation: () => gsap.utils.random(-10, 10),
