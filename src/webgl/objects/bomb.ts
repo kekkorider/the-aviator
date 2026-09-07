@@ -3,11 +3,23 @@ import type { Mesh } from 'three/webgpu'
 
 import { BombMaterial } from '../materials/bomb'
 
-export function createBomb(ctx: ThreeContext): Mesh {
-  const bomb = ctx.modules.assetLoader.getModel('game')?.scene.getObjectByName('Bomb') as Mesh
-  bomb.geometry.scale(0.3, 0.3, 0.3)
-  bomb.geometry.rotateZ(-Math.PI / 2)
-  bomb.material = BombMaterial
+export class Bomb {
+  private ctx!: ThreeContext
 
-  return bomb
+  mesh!: Mesh
+
+  constructor(ctx: ThreeContext) {
+    this.ctx = ctx
+  }
+
+  createMesh(): Mesh {
+    const mesh = this.ctx.modules.assetLoader.getModel('game')!.scene.getObjectByName('Bomb') as Mesh
+    mesh.geometry.scale(0.3, 0.3, 0.3)
+    mesh.geometry.rotateZ(-Math.PI / 2)
+    mesh.material = BombMaterial
+
+    this.mesh = mesh
+
+    return mesh
+  }
 }

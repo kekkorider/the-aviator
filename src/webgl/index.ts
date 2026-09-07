@@ -20,7 +20,7 @@ import { gsap } from 'gsap'
 import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
-import { BombMaterial, map as bombMap } from './materials/bomb'
+import { map as bombMap } from './materials/bomb'
 import {
   ParticlesMaterial,
   computeInit,
@@ -43,7 +43,8 @@ import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
 // import { TransformControl } from './behaviors/TransformControl'
 
-import { createBomb } from './objects/bomb'
+import { Bomb } from './objects/Bomb'
+import { Coin } from './objects/Coin'
 
 import { BodyBox, type BodyParams as BoxBodyParams } from './behaviors/physics/BodyBox'
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
@@ -97,8 +98,6 @@ modules.assetLoader.getTexture('bomb-base')!.flipY = false
 
 bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
 
-createBomb(starter.ctx)
-
 //
 // Camera
 //
@@ -142,7 +141,7 @@ requestAnimationFrame(() => {
   } as object
 })
 
-const bomb = createBomb(starter.ctx)
+const bomb = new Bomb(starter.ctx).createMesh()
 
 const planeControlComponent = addComponent(plane, PlaneControl)
 planeControlComponent.disable()
@@ -156,16 +155,7 @@ scene.add(plane)
 //
 // Coin
 //
-const coinGeometry = new THREE.ConeGeometry(0.2, 0.25, 3, 1)
-const coinMaterial = new THREE.MeshNormalNodeMaterial()
-
-const coin = new THREE.Object3D()
-coin.name = 'Coin'
-
-const coinInner = new THREE.Mesh(coinGeometry, coinMaterial)
-coinInner.name = 'CoinInner'
-
-coin.add(coinInner)
+const coin = new Coin()
 
 //
 // Left wall
@@ -217,7 +207,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
     rng = Math.random()
 
     if (rng > 0.1) {
-      const clone = coin.clone(true)
+      const clone = coin.clone(false)
       const inner = clone.getObjectByName('CoinInner') as THREE.Mesh
 
       const angle = startAngle - i * gap
