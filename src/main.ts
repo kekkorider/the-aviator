@@ -6,3 +6,4 @@ import './assets/css/hud.css'
 import './assets/css/game-over.css'
 
 import './webgl'
+import './assets/js/gsap'

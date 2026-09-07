@@ -113,7 +113,7 @@ export class UIModule extends ContextModule<UIEvents> {
     this.ctx.on(ThreeContextEvents.Resized, this.handleResize.bind(this))
   }
 
-  animateInMainTitle(): void {
+  animateInMainTitle(): gsap.core.Timeline {
     const tl = gsap.timeline({
       paused: true
     })
@@ -201,15 +201,7 @@ export class UIModule extends ContextModule<UIEvents> {
       duration: 1.3
     }, 'animateInSubtitle+=0.2')
 
-    tl.addLabel('animateInPlayButton', '<0.3')
-    tl.fromTo(this.playButton, {
-      scale: 0.4,
-      visibility: 'hidden'
-    }, {
-      scale: 1,
-      duration: 1,
-      ease: 'elastic.out(1, 0.6)',
-      visibility: 'visible',
+    tl.animateOutElasticOut(this.playButton, {
       onStart: () => {
         this.emit('animateInMainTitle')
       },
@@ -217,12 +209,12 @@ export class UIModule extends ContextModule<UIEvents> {
         this.playButton!.removeAttribute('disabled')
         this.createPlayButtonObserver()
       }
-    }, 'animateInPlayButton')
+    }, '<0.3')
 
     return tl.play()
   }
 
-  animateOutMainTitle(): void {
+  animateOutMainTitle(): gsap.core.Timeline {
     const tl = gsap.timeline({
       paused: true,
       onComplete: () => {
@@ -235,11 +227,7 @@ export class UIModule extends ContextModule<UIEvents> {
     const subtitle = document.getElementById('main-menu-subtitle') as HTMLElement
 
     tl.addLabel('start')
-    tl.to(this.playButton, {
-      scale: 0,
-      duration: 0.5,
-      ease: 'back.in(1.5)',
-    }, 'start')
+    tl.animateOutBackIn(this.playButton, {}, 'start')
 
     tl.to(pills, {
       scale: 0,
@@ -337,21 +325,27 @@ export class UIModule extends ContextModule<UIEvents> {
       ease: 'bounce.out'
     }, 'start')
 
-    tl.addLabel('animateInButton', '<0.8')
-    tl.fromTo(this.gameOverButton, {
-      visibility: 'hidden',
-      scale: 0.6,
-      rotation: -20
-    }, {
-      visibility: 'visible',
-      scale: 1,
-      rotation: 0,
-      duration: 1.2,
-      ease: 'elastic.out(1.3, 0.6)'
-    }, 'animateInButton')
+    tl.animateOutElasticOut(this.gameOverButton, {
+      onComplete: () => {
+        this.createGameOverButtonObserver()
+      }
+    }, '<0.8')
   }
 
-  animateOutGameOverScreen(): void {}
+  animateOutGameOverScreen(): gsap.core.Timeline {
+    const tl = gsap.timeline({
+      paused: true,
+      onComplete: () => {
+        this.ctx.modules.game.start(true)
+      }
+    })
+
+    tl.addLabel('start')
+    tl.animateOutBackIn(this.gameOverButton, {}, 'start')
+    tl.animateOutBackIn(this.gameOverTitle, {}, '>-0.2')
+
+    return tl.play()
+  }
 
   private createPlayButtonObserver(): void {
     this.playButtonObserver = Observer.create({
@@ -370,11 +364,14 @@ export class UIModule extends ContextModule<UIEvents> {
         this.playButtonHoverTween?.reverse()
       }
     })
+  }
 
+  private createGameOverButtonObserver(): void {
     this.gameOverButtonObserver = Observer.create({
       target: this.gameOverButton,
       onClick: () => {
         this.gameOverButtonObserver?.disable()
+        this.animateOutGameOverScreen()
       },
       onHover: () => {
         this.gameOverButtonHoverTween?.invalidate()

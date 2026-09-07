@@ -1,6 +1,7 @@
 import { ContextModule } from "three-start"
 
 type GameEvents = {
+  start: [animateInPlane: boolean]
   scoreChanged: [currScore: number, prevScore: number]
   levelChanged: [level: number]
   levelProgressChanged: [levelProgress: number]
@@ -13,6 +14,15 @@ export class GameModule extends ContextModule<GameEvents> {
   private level: number = 1
   private levelProgress: number = 0
   private lives: number = 3
+
+  start(animateInPlane: boolean = false): void {
+    this.setLives(3)
+    this.setScore(0)
+    this.setLevel(1)
+    this.setLevelProgress(0)
+
+    this.emit('start', animateInPlane)
+  }
 
   addScore(score: number): void {
     const prevScore = this.score

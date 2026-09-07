@@ -64,7 +64,7 @@ const starter = new ThreeStart()
 starter.addModules({
   assetLoader: new AssetLoaderModule(),
   // orbitControls: new OrbitControlsModule(),
-  physics: new PhysicsModule(false),
+  physics: new PhysicsModule(true),
   // inspector: new InspectorModule(),
   input: new InputModule(),
   game: new GameModule(),
@@ -82,22 +82,12 @@ starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
 })
 
-
 starter.start()
 
 await renderer.init()
 await renderer.computeAsync(computeInit)
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
-
-// const canvas = starter.ctx.canvasContainer?.querySelector('canvas')
-// canvas?.setAttribute('layoutsubtree', '')
-
-// const hud = document.getElementById('hud') as HTMLDivElement
-// console.log(hud)
-
-// canvas?.appendChild(hud)
-
 
 await modules.assetLoader.loadModels('game.glb')
 await modules.assetLoader.loadTextures('bomb-base.png')
@@ -327,6 +317,20 @@ function createPostProcessing(): void {
   renderPipeline.outputNode = outputNode()
 }
 
+modules.game.on('start', async (animateInPlane: boolean) => {
+  !animateInPlane && planeControlComponent.enable()
+  spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
+
+  if (animateInPlane) {
+    await gsap.delayedCall(1, () => {})
+
+    await planeControlComponent.animateIn().restart()
+
+    planeControlComponent.enable()
+    planeBodyComponent.enable()
+  }
+})
+
 modules.game.on('levelProgressChanged', (levelProgress: number): void => {
   const amount = (planetRotationComponent!.getInitialSpeed() + (modules.game.getLevel() - 1) * 0.06 + levelProgress * 0.11).toFixed(3)
   planetRotationComponent!.tweenSpeed(parseFloat(amount))
@@ -387,39 +391,16 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
 })
 
 modules.ui.on('animateInMainTitle', () => {
-  const tl = gsap.timeline({
-    paused: true
-  })
-
-  tl.addLabel('start')
-  tl.fromTo(plane.position, {
-    y: 4,
-  },
-  {
-    y: 0,
-    duration: 1.6,
-    ease: 'back.out(1)',
-    overwrite: 'auto'
-  }, 'start')
-
-  tl.fromTo(plane.rotation, {
-    x: -Math.PI * 2,
-  }, {
-    x: 0,
-    duration: 1,
-    ease: 'back.out(1.7)',
-    overwrite: 'auto'
-  }, 'start+=0.3')
-
-  return tl.play()
+  planeControlComponent.animateIn()
 })
 
 modules.ui.on('animateOutMainTitle', () => {
   modules.ui.animateInHud()
-  planeControlComponent.enable()
-  spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
+  modules.game.start(false)
 })
 
 gsap.delayedCall(0.3, () => {
   modules.ui.animateInMainTitle()
+
+  // modules.ui.animateInGameOverScreen()
 })

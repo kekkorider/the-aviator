@@ -41,14 +41,45 @@ export class PlaneControl extends Object3DBehaviour {
   }
 
   onEnable(): void {
-    this.observer?.enable()
+    this.observer!.enable()
     this.bodyComponent!.body!.motionType = this._originalBodyMotionType
   }
 
   onDisable(): void {
-    this.observer?.disable()
+    this.observer!.disable()
     gsap.killTweensOf(this.object)
     this.bodyComponent!.body!.motionType = MotionType.STATIC
+  }
+
+  animateIn(): gsap.core.Timeline {
+    const tl = gsap.timeline({
+      paused: true
+    })
+
+    tl.addLabel('start')
+    tl.fromTo(this.object.position, {
+      x: -1.5,
+      y: 4,
+    },
+    {
+      y: 0,
+      duration: 1.6,
+      ease: 'back.out(1)',
+      overwrite: 'auto'
+    }, 'start+=0.02')
+
+    tl.fromTo(this.object.rotation, {
+      x: -Math.PI * 2,
+      y: 0,
+      z: 0
+    }, {
+      x: 0,
+      duration: 1,
+      ease: 'back.out(1.7)',
+      overwrite: 'auto'
+    }, 'start+=0.3')
+
+    return tl.play()
   }
 
   die(): void {
@@ -101,7 +132,7 @@ export class PlaneControl extends Object3DBehaviour {
   }
 
   private createMouseControl() {
-    const moveY = gsap.quickTo(
+    const moveYObject = gsap.quickTo(
       this.object.position,
       'y',
       {
@@ -121,7 +152,7 @@ export class PlaneControl extends Object3DBehaviour {
       }
     )
 
-    const targetY = gsap.utils.pipe(
+    const targetYObject = gsap.utils.pipe(
       gsap.utils.clamp(-0.75, 0.75),
       gsap.utils.mapRange(-0.75, 0.75, -1.5, 2.1)
     )
@@ -161,7 +192,7 @@ export class PlaneControl extends Object3DBehaviour {
         this.ndc.setComponent(0, (event.x! / this.viewport.x) * 2 - 1)
         this.ndc.setComponent(1, -(event.y! / this.viewport.y) * 2 + 1)
 
-        moveY(targetY(this.ndc.y))
+        moveYObject(targetYObject(this.ndc.y))
         moveYCamera(targetYCamera(this.ndc.y))
       }
     })
