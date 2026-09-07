@@ -15,6 +15,8 @@ export class GameModule extends ContextModule<GameEvents> {
   private levelProgress: number = 0
   private lives: number = 3
 
+  spawnTimeline!: gsap.core.Timeline
+
   start(animateInPlane: boolean = false): void {
     this.setLives(3)
     this.setScore(0)
@@ -97,5 +99,9 @@ export class GameModule extends ContextModule<GameEvents> {
     if (this.lives <= 0) {
       this.emit('gameOver')
     }
+  }
+
+  startSpawn(): void {
+
   }
 }

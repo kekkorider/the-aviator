@@ -43,6 +43,8 @@ import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
 // import { TransformControl } from './behaviors/TransformControl'
 
+import { createBomb } from './objects/bomb'
+
 import { BodyBox, type BodyParams as BoxBodyParams } from './behaviors/physics/BodyBox'
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
 
@@ -74,7 +76,6 @@ starter.addModules({
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
 
 let plane: THREE.Mesh | undefined = undefined
-let bomb: THREE.Mesh | undefined = undefined
 
 renderer.setClearColor(0xe4e0ba)
 
@@ -95,6 +96,8 @@ await modules.assetLoader.loadTextures('bomb-base.png')
 modules.assetLoader.getTexture('bomb-base')!.flipY = false
 
 bombMap.value = modules.assetLoader.getTexture('bomb-base') as THREE.Texture
+
+createBomb(starter.ctx)
 
 //
 // Camera
@@ -122,11 +125,6 @@ plane.position.x = -1.5
 plane.position.y = 10
 plane.material = PlaneMaterial
 
-bomb = modules.assetLoader.getModel('game')?.scene.getObjectByName('Bomb') as THREE.Mesh
-bomb.geometry.scale(0.3, 0.3, 0.3)
-bomb.geometry.rotateZ(-Math.PI / 2)
-bomb.material = BombMaterial
-
 const planeBody = new THREE.Object3D()
 planeBody.name = 'PlaneBody'
 plane.add(planeBody)
@@ -143,6 +141,8 @@ requestAnimationFrame(() => {
     object: planeBody
   } as object
 })
+
+const bomb = createBomb(starter.ctx)
 
 const planeControlComponent = addComponent(plane, PlaneControl)
 planeControlComponent.disable()
@@ -318,16 +318,16 @@ function createPostProcessing(): void {
 }
 
 modules.game.on('start', async (animateInPlane: boolean) => {
-  !animateInPlane && planeControlComponent.enable()
-  spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
-
   if (animateInPlane) {
-    await gsap.delayedCall(1, () => {})
-
     await planeControlComponent.animateIn().restart()
 
     planeControlComponent.enable()
     planeBodyComponent.enable()
+
+    spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
+  } else {
+    planeControlComponent.enable()
+    spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
   }
 })
 
@@ -377,7 +377,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
 
     modules.game.addScore(-500)
     modules.game.addLives(-1)
-    modules.game.setLevelProgress(0)
+    modules.game.getLives() > 0 && modules.game.setLevelProgress(0)
   }
 
   // Bomb and coins hit wall -> killed
