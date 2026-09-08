@@ -17,7 +17,6 @@ import {
 import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
 
-import { PlanetMaterial } from './materials/planet'
 import { PlaneMaterial } from './materials/plane'
 import { PropellerMaterial } from './materials/propeller'
 import { map as bombMap } from './materials/bomb'
@@ -43,6 +42,7 @@ import { Float } from './behaviors/Float'
 import { PlaneControl } from './behaviors/PlaneControl'
 // import { TransformControl } from './behaviors/TransformControl'
 
+import { Planet } from './objects/Planet'
 import { Bomb } from './objects/Bomb'
 import { Coin } from './objects/Coin'
 
@@ -77,6 +77,7 @@ starter.addModules({
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
 
 let plane: THREE.Mesh | undefined = undefined
+let planet: Planet
 
 renderer.setClearColor(0xe4e0ba)
 
@@ -107,13 +108,8 @@ camera.lookAt(0, 0, 0)
 //
 // Planet
 //
-const planetGeometry = new THREE.IcosahedronGeometry(10, 14)
-const planet = new THREE.Mesh(planetGeometry, PlanetMaterial)
-planet.name = 'Planet'
-planet.position.set(0, -12, 0)
-const planetRotationComponent = addComponent(planet, Spin, { axis: 'z', speed: 0.2 })
-scene.add(planet)
-planet.visible = true
+planet = new Planet(starter.ctx)
+planet.mesh.position.set(0, -12, 0)
 
 //
 // Plane
@@ -217,7 +213,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 
       clone.position.set(x, y, 0)
       clone.rotation.z = angle
-      planet.add(clone)
+      planet.mesh.add(clone)
 
       addComponent(inner, Spin, { axis: 'y', speed: 1 + Math.random() * 2 })
       addComponent(inner, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
@@ -248,7 +244,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 
       wrapper.position.set(x, y, 0)
       wrapper.rotation.z = angle
-      planet.add(wrapper)
+      planet.mesh.add(wrapper)
 
       addComponent(clone, Float, { axis: 'x', speed: 3, amplitude: 0.3, offset: angle * 6 })
       addComponent(clone, BodySphere, {
@@ -269,7 +265,7 @@ function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAn
 
   if (spawnAfter) {
     gsap.delayedCall(spawnAfter, () => {
-      const angle = -(planet.rotation.z % (Math.PI * 2))
+      const angle = -(planet.mesh.rotation.z % (Math.PI * 2))
       const amount = gsap.utils.random(3, 6)
       const radius = gsap.utils.random(11, 14)
       const spawnAfter = gsap.utils.random(2.5, 5)
@@ -314,20 +310,20 @@ modules.game.on('start', async (animateInPlane: boolean) => {
     planeControlComponent.enable()
     planeBodyComponent.enable()
 
-    spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
+    spawnCoins(5, Math.PI * 0.03, 12, -(planet.mesh.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
   } else {
     planeControlComponent.enable()
-    spawnCoins(5, Math.PI * 0.03, 12, -(planet.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
+    spawnCoins(5, Math.PI * 0.03, 12, -(planet.mesh.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
   }
 })
 
 modules.game.on('levelProgressChanged', (levelProgress: number): void => {
-  const amount = (planetRotationComponent!.getInitialSpeed() + (modules.game.getLevel() - 1) * 0.06 + levelProgress * 0.11).toFixed(3)
-  planetRotationComponent!.tweenSpeed(parseFloat(amount))
+  const amount = (planet.rotationComponent!.getInitialSpeed() + (modules.game.getLevel() - 1) * 0.06 + levelProgress * 0.11).toFixed(3)
+  planet.rotationComponent!.tweenSpeed(parseFloat(amount))
 })
 
 modules.game.on('levelChanged', (level: number) => {
-  level === 1 && planetRotationComponent!.resetSpeed(1)
+  level === 1 && planet.rotationComponent!.resetSpeed(1)
 })
 
 modules.game.on('gameOver', () => {
