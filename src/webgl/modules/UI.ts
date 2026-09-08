@@ -318,6 +318,7 @@ export class UIModule extends ContextModule<UIEvents> {
     tl.addLabel('start')
 
     tl.set(this.gameOverScreen, { clearProps: 'visibility' }, 'start')
+    tl.set(this.gameOverTitle, { scale: 1 }, 'start')
 
     tl.from(this.gameOverTitle, {
       y: '-60vh',

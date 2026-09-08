@@ -17,8 +17,6 @@ import {
 import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
 
-import { PlaneMaterial } from './materials/plane'
-import { PropellerMaterial } from './materials/propeller'
 import { map as bombMap } from './materials/bomb'
 import {
   ParticlesMaterial,
@@ -39,12 +37,12 @@ import { UIModule } from './modules/UI'
 import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
 import { Float } from './behaviors/Float'
-import { PlaneControl } from './behaviors/PlaneControl'
 // import { TransformControl } from './behaviors/TransformControl'
 
 import { Planet } from './objects/Planet'
 import { Bomb } from './objects/Bomb'
 import { Coin } from './objects/Coin'
+import { Player } from './objects/Player'
 
 import { BodyBox, type BodyParams as BoxBodyParams } from './behaviors/physics/BodyBox'
 import { BodySphere, type BodyParams as SphereBodyParams } from './behaviors/physics/BodySphere'
@@ -76,9 +74,6 @@ starter.addModules({
 
 const { scene, renderer, camera, modules, scenePass, renderPipeline } = starter.ctx
 
-let plane: THREE.Mesh | undefined = undefined
-let planet: Planet
-
 renderer.setClearColor(0xe4e0ba)
 
 starter.ctx.once(ThreeContextEvents.Mount, () => {
@@ -108,49 +103,26 @@ camera.lookAt(0, 0, 0)
 //
 // Planet
 //
-planet = new Planet(starter.ctx)
+const planet = new Planet(starter.ctx)
 planet.mesh.position.set(0, -12, 0)
 
 //
 // Plane
 //
-plane = modules.assetLoader.getModel('game')?.scene.getObjectByName('Plane') as THREE.Mesh
+const plane = new Player(starter.ctx).create()
 plane.scale.set(0.6, 0.6, 0.6)
 plane.position.x = -1.5
 plane.position.y = 10
-plane.material = PlaneMaterial
-
-const planeBody = new THREE.Object3D()
-planeBody.name = 'PlaneBody'
-plane.add(planeBody)
-
-const planeBodyComponent = addComponent(planeBody, BodySphere, {
-  motionType: MotionType.KINEMATIC,
-} as RigidBodySettings, {
-  radius: 0.25
-} as SphereBodyParams)
-
-requestAnimationFrame(() => {
-  planeBodyComponent!.body!.userData = {
-    isPlane: true,
-    object: planeBody
-  } as object
-})
-
-const bomb = new Bomb(starter.ctx).createMesh()
-
-const planeControlComponent = addComponent(plane, PlaneControl)
-planeControlComponent.disable()
-
-const propeller = plane.getObjectByName('Propeller') as THREE.Mesh
-propeller.material = PropellerMaterial
-addComponent(propeller, Spin, { axis: 'x', speed: 20 })
-
 scene.add(plane)
 
+requestAnimationFrame(() => {
+  plane.controlComponent!.disable()
+})
+
 //
-// Coin
+// Game objects
 //
+const bomb = new Bomb(starter.ctx).createMesh()
 const coin = new Coin()
 
 //
@@ -305,14 +277,14 @@ function createPostProcessing(): void {
 
 modules.game.on('start', async (animateInPlane: boolean) => {
   if (animateInPlane) {
-    await planeControlComponent.animateIn().restart()
+    await plane.controlComponent.animateIn().restart()
 
-    planeControlComponent.enable()
-    planeBodyComponent.enable()
+    plane.controlComponent.enable()
+    plane.bodyComponent.enable()
 
     spawnCoins(5, Math.PI * 0.03, 12, -(planet.mesh.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
   } else {
-    planeControlComponent.enable()
+    plane.controlComponent.enable()
     spawnCoins(5, Math.PI * 0.03, 12, -(planet.mesh.rotation.z % (Math.PI * 2)) + Math.PI * 0.25, 3.5)
   }
 })
@@ -327,10 +299,10 @@ modules.game.on('levelChanged', (level: number) => {
 })
 
 modules.game.on('gameOver', () => {
-  planeControlComponent.disable()
-  planeBodyComponent.disable()
+  plane.controlComponent.disable()
+  plane.bodyComponent.disable()
 
-  planeControlComponent.die()
+  plane.controlComponent.die()
 
   gsap.delayedCall(0.6, () => {
     modules.ui.animateInGameOverScreen()
@@ -377,7 +349,7 @@ modules.physics.on('contactAdded', (bodyA: RigidBody, bodyB: RigidBody): void =>
 })
 
 modules.ui.on('animateInMainTitle', () => {
-  planeControlComponent.animateIn()
+  plane.controlComponent.animateIn()
 })
 
 modules.ui.on('animateOutMainTitle', () => {
