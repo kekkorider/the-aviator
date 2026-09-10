@@ -4,7 +4,7 @@ import { Inspector } from 'three/addons/inspector/Inspector.js'
 import type { ParametersGroup } from "three/examples/jsm/inspector/tabs/Parameters.js"
 
 import { seaSpeed, seaHeight, colorShallow, colorDeep } from '../materials/planet'
-import { colorA, colorB, lifeMin, lifeMax } from '../materials/particles'
+import { colorA, colorB, lifeMin, lifeMax } from '../materials/smoke'
 export class InspectorModule extends ContextModule {
   inspector: Inspector | null = null
   gui: ParametersGroup | null = null

@@ -18,13 +18,6 @@ import { MotionType } from 'crashcat'
 import { gsap } from 'gsap'
 
 import { map as bombMap } from './materials/bomb'
-import {
-  ParticlesMaterial,
-  computeInit,
-  computeUpdate,
-  COUNT as PARTICLE_COUNT,
-  emitterPosition
-} from './materials/particles'
 
 import { AssetLoaderModule } from './modules/AssetLoader'
 // import { OrbitControlsModule } from './modules/OrbitControls'
@@ -37,7 +30,6 @@ import { UIModule } from './modules/UI'
 import { Body } from "./behaviors/physics/Body"
 import { Spin } from './behaviors/Spin'
 import { Float } from './behaviors/Float'
-// import { TransformControl } from './behaviors/TransformControl'
 
 import { Planet } from './objects/Planet'
 import { Bomb } from './objects/Bomb'
@@ -78,12 +70,17 @@ renderer.setClearColor(0xe4e0ba)
 
 starter.ctx.once(ThreeContextEvents.Mount, () => {
   createPostProcessing()
+
+  gsap.delayedCall(0.3, () => {
+    modules.ui.animateInMainTitle()
+
+    // modules.ui.animateInGameOverScreen()
+  })
 })
 
 starter.start()
 
 await renderer.init()
-await renderer.computeAsync(computeInit)
 
 starter.mount(document.getElementById('app')! as HTMLDivElement)
 
@@ -151,22 +148,6 @@ const coin = new Coin()
     object: mesh
   } as object
 }
-
-//
-// Particles
-//
-const particleGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
-const particles = new THREE.InstancedMesh(particleGeometry, ParticlesMaterial, PARTICLE_COUNT)
-particles.position.set(-0.7, 0.1, 0)
-particles.frustumCulled = false
-particles.name = 'Particles'
-// addComponent(particles, TransformControl)
-plane.add(particles)
-
-starter.ctx.on(ThreeContextEvents.Update, () => {
-  particles.getWorldPosition(emitterPosition.value)
-  renderer.compute(computeUpdate)
-})
 
 function spawnCoins(amount: number, gap: number, baseRadius: number = 6, startAngle: number = 0, spawnAfter?: number): void {
   let i: number, x: number, y: number, rng: number
@@ -355,10 +336,4 @@ modules.ui.on('animateInMainTitle', () => {
 modules.ui.on('animateOutMainTitle', () => {
   modules.ui.animateInHud()
   modules.game.start(false)
-})
-
-gsap.delayedCall(0.3, () => {
-  modules.ui.animateInMainTitle()
-
-  // modules.ui.animateInGameOverScreen()
 })

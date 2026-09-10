@@ -1,9 +1,11 @@
-import { Mesh, Object3D } from 'three/webgpu'
+import { Mesh, Object3D, InstancedMesh } from 'three/webgpu'
 import { MotionType } from 'crashcat'
 import { addComponent } from 'three-start'
 
 import type { ThreeContext } from 'three-start'
 import type { RigidBodySettings } from 'crashcat'
+
+import { Smoke } from './Smoke'
 
 import { PlaneMaterial } from '../materials/plane'
 import { PropellerMaterial } from '../materials/propeller'
@@ -21,6 +23,7 @@ export class Player extends Object3D {
   meshPlane!: Mesh
   meshPropeller!: Mesh
   meshBody!: Object3D
+  meshSmoke!: InstancedMesh
 
   controlComponent!: PlaneControl
   bodyComponent!: BodySphere
@@ -47,6 +50,10 @@ export class Player extends Object3D {
     addComponent(meshPropeller, Spin, { axis: 'x', speed: 20 })
 
     this.add(meshPlane)
+
+    this.meshSmoke = new Smoke(this.ctx)
+    this.meshSmoke.position.set(-0.7, 0.1, 0)
+    this.add(this.meshSmoke)
 
     this.name = 'Plane'
 

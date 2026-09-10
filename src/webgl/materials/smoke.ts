@@ -11,7 +11,7 @@ export const lifeMax = uniform(3.5)
 export const emitterPosition = uniform(vec3())
 export const direction = uniform(vec3(-1, 0, 0))
 
-export const ParticlesMaterial = new MeshBasicNodeMaterial()
+export const SmokeMaterial = new MeshBasicNodeMaterial()
 
 const positionsArray = new Float32Array(COUNT * 3)
 const positionsAttribute = new StorageInstancedBufferAttribute(positionsArray, 3)
@@ -99,7 +99,7 @@ export const computeUpdate = Fn(() => {
   colorsStorage.element(idx).assign(color)
 })().compute(COUNT)
 
-ParticlesMaterial.positionNode = Fn(() => {
+SmokeMaterial.positionNode = Fn(() => {
   const instancePosition = positionsStorage.element(instanceIndex)
   const instanceScale = scalesStorage.element(instanceIndex)
   const instanceRotation = rotationsStorage.element(instanceIndex)
@@ -111,6 +111,6 @@ ParticlesMaterial.positionNode = Fn(() => {
   return modelWorldMatrixInverse.mul(worldPosition).xyz
 })()
 
-ParticlesMaterial.colorNode = Fn(() => {
+SmokeMaterial.colorNode = Fn(() => {
   return colorsStorage.element(instanceIndex)
 })()
